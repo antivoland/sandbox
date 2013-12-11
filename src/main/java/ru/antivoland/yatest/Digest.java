@@ -9,7 +9,8 @@ import java.util.Map;
 /**
  * http://en.wikipedia.org/wiki/Digest_access_authentication
  *
- * Во-первых byte[] сравнивается по ссылке, лучше обернуть строкой
+ * Во-первых byte[] сравнивается по ссылке, так нужно хотя бы обернуть строкой.
+ * Во вторых получим дедлок в первой строке метода digest.
  */
 public abstract class Digest {
     private Map<byte[], byte[]> cache = new HashMap<byte[], byte[]>();
