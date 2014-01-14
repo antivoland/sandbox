@@ -3,6 +3,10 @@ package ru.vi.vitest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.*;
 
 public class Model {
@@ -11,7 +15,8 @@ public class Model {
     private static final Random rnd = new Random();
     private static final Logger log = LoggerFactory.getLogger(Model.class);
 
-    private final Map<String, Double> model = new HashMap<>();
+
+    private final Map<String, Double> model = new TreeMap<>();
     private long lastSaveMillis = -1;
 
     public synchronized void add() {
@@ -44,7 +49,20 @@ public class Model {
         }
         lastSaveMillis = nowMillis;
         log.info("SAVE");
-        // TODO: complete
+        try {
+            serialize();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void serialize() throws IOException {
+        File f = new File("model.d");
+        log.info("saving to "+f.getAbsolutePath());
+        FileOutputStream fos = new FileOutputStream(f, false);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(model);
+        oos.close();
     }
 
     public synchronized int size() {
