@@ -16,7 +16,6 @@ public class Main {
     private static final String ADD = "ADD";
     private static final String REMOVE = "REMOVE";
     private static final String SAVE = "SAVE";
-    private static final int SAVE_PERIOD = 600;
     private static final Logger log = LoggerFactory.getLogger(Main.class);
     private static final BlockingQueue<String> commands = new ArrayBlockingQueue<String>(10);
     private static final Model model = new Model();

@@ -7,10 +7,12 @@ import java.util.*;
 
 public class Model {
     private static final String ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final int SAVE_PERIOD = 600;
     private static final Random rnd = new Random();
     private static final Logger log = LoggerFactory.getLogger(Model.class);
 
-    private static final Map<String, Double> model = new HashMap<>();
+    private final Map<String, Double> model = new HashMap<>();
+    private long lastSaveMillis = -1;
 
     public synchronized void add() {
         String key = dummyKey();
@@ -34,8 +36,12 @@ public class Model {
     }
 
     public synchronized void save() {
+        long nowMillis = System.currentTimeMillis();
+        if (nowMillis < lastSaveMillis + SAVE_PERIOD) {
+            return;
+        }
         log.info("SAVE");
-        // TODO: implement
+        // TODO: complete
     }
 
     public synchronized int size() {
