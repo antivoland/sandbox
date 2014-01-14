@@ -7,21 +7,33 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 public class Main {
     private static final int WIDTH = 400;
     private static final int HEIGHT = 300;
+    private static final String ADD = "ADD";
+    private static final String REMOVE = "REMOVE";
+    private static final String SAVE = "SAVE";
     private static final int SAVE_PERIOD = 600;
-    private static final String ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final Logger log = LoggerFactory.getLogger(Main.class);
-    private static final Random rnd = new Random();
-    private static final Map<String, Double> model = new HashMap<>();
+    private static final BlockingQueue<String> commands = new ArrayBlockingQueue<String>(10);
+    private static final Model model = new Model();
 
     public static void main(String[] args) {
+        /*
+        ExecutorService service = Executors.newCachedThreadPool();
+        for (int i = 0; i < 10; i++) {
+            service.submit(new Runnable() {
+                public void run() {
+
+                    log.info("saving...");
+                }
+            });
+        }
+        */
+
         JFrame f = new JFrame("MyApp");
         f.setSize(WIDTH, HEIGHT);
         f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -38,8 +50,12 @@ public class Main {
         btnAdd.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                log.info("+n clicked");
-                add(Integer.parseInt(txtN.getText()));
+                int n = Integer.parseInt(txtN.getText());
+                for (int i = 0; i < n; ++i) {
+                    model.add();
+                }
+                log.info("model.size=" + model.size());
+                model.save();
             }
         });
         pnlMain.add(btnAdd);
@@ -48,8 +64,12 @@ public class Main {
         btnRemove.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                log.info("-n clicked");
-                remove(Integer.parseInt(txtN.getText()));
+                int n = Integer.parseInt(txtN.getText());
+                for (int i = 0; i < n; ++i) {
+                    model.remove();
+                }
+                log.info("model.size=" + model.size());
+                model.save();
             }
         });
         pnlMain.add(btnRemove);
@@ -58,50 +78,8 @@ public class Main {
         lblTime.setText(String.valueOf(System.currentTimeMillis()));
         pnlMain.add(lblTime);
 
+        // TODO: progress bar
+
         f.setVisible(true);
-    }
-
-    public void save() {
-
-    }
-
-    public static String dummyKey() {
-        long left = ((long) (rnd.nextInt(32)) << 32) + rnd.nextInt(32);
-        char[] right = new char[5];
-        for (int i = 0; i < right.length; ++i) {
-            right[i] = ALPHABET.charAt(rnd.nextInt(ALPHABET.length()));
-        }
-        StringBuilder buf = new StringBuilder();
-        buf.append(left);
-        buf.append(right);
-        return buf.toString();
-    }
-
-    public static Double dummyValue() {
-        return rnd.nextDouble();
-    }
-
-    public static void add(int n) {
-        for (int i = 0; i < n; ++i) {
-            String key = dummyKey();
-            Double value = dummyValue();
-            log.info("key=" + key + ", value=" + dummyValue());
-            model.put(key, value);
-        }
-        log.info("model.size=" + model.size());
-    }
-
-    public static void remove(int n) {
-        java.util.List<String> keys = new ArrayList<>();
-        keys.addAll(model.keySet());
-
-        int i = 0;
-        while (i < n && keys.size() > 0) {
-            int index = rnd.nextInt(keys.size());
-            String key = keys.remove(index);
-            model.remove(key);
-            ++i;
-        }
-        log.info("model.size=" + model.size());
     }
 }
