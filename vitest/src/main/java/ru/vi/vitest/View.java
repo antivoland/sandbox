@@ -29,7 +29,6 @@ public class View {
 
         // TODO: текущее время, обновляется раз в секунду
 
-        lblTime.setText(String.valueOf(System.currentTimeMillis()));
         pnlMain.add(lblTime);
 
         // TODO: progress bar

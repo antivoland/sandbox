@@ -6,10 +6,7 @@ import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 public class Controller {
     private static final Logger log = LoggerFactory.getLogger(Controller.class);
@@ -63,12 +60,21 @@ public class Controller {
         });
 
         view.run();
+
+        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+        service.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                view.lblTime.setText(String.valueOf(System.currentTimeMillis()));
+            }
+        }, 0, 1, TimeUnit.SECONDS);
     }
 
     private void save() {
         JProgressBar bar = view.createProgressBar(model.size());
         try {
             commands.add(Worker.SAVE);
+            // TODO: update progress bar
         } finally {
             view.releaseProgressBar(bar);
         }
