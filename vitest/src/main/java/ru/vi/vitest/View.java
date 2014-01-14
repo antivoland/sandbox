@@ -11,6 +11,7 @@ public class View {
     public final JButton btnAdd = new JButton("добавить");
     public final JButton btnRemove = new JButton("удалить");
     public final JLabel lblTime = new JLabel();
+    // public final JProgressBar prgSave = new JProgressBar();
     private final JPanel pnlMain = new JPanel();
 
     public void run() {
@@ -26,12 +27,9 @@ public class View {
 
         pnlMain.add(btnAdd);
         pnlMain.add(btnRemove);
-
-        // TODO: текущее время, обновляется раз в секунду
-
         pnlMain.add(lblTime);
 
-        // TODO: progress bar
+        // pnlMain.add(prgSave);
 
         f.setVisible(true);
     }
