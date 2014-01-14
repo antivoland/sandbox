@@ -36,10 +36,13 @@ public class Model {
     }
 
     public synchronized void save() {
+        // операция автосохранения происходит после каждой модификации, но не чаще раза в 10 секунд
+        // после каждой модификации данные сохраняются в файл в сортированном порядке ключа
         long nowMillis = System.currentTimeMillis();
         if (nowMillis < lastSaveMillis + SAVE_PERIOD) {
             return;
         }
+        lastSaveMillis = nowMillis;
         log.info("SAVE");
         // TODO: complete
     }
@@ -54,6 +57,7 @@ public class Model {
         for (int i = 0; i < right.length; ++i) {
             right[i] = ALPHABET.charAt(rnd.nextInt(ALPHABET.length()));
         }
+
         StringBuilder buf = new StringBuilder();
         buf.append(left);
         buf.append(right);
