@@ -3,25 +3,23 @@ package ru.vi.vitest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
 import java.io.*;
 import java.util.*;
 
 public class Model {
     private static final String ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    private static final int SAVE_PERIOD = 600;
+    private static final int SAVE_PERIOD = 10000;
     private static final Random rnd = new Random();
     private static final Logger log = LoggerFactory.getLogger(Model.class);
 
     private final Map<String, Double> data = new HashMap<>();
-    private long lastSaveMillis = -1;
+    private long nextSaveMillis = System.currentTimeMillis();
 
     public synchronized void add() {
         String key = dummyKey();
         Double value = dummyValue();
-        // log.info("ADD key=" + key + ", value=" + value);
+        log.debug("ADD key=" + key + ", value=" + value);
         data.put(key, value);
-
     }
 
     public synchronized void remove() {
@@ -33,7 +31,7 @@ public class Model {
 
         int index = rnd.nextInt(keys.size());
         String key = keys.remove(index);
-        // log.info("REMOVE key=" + key);
+        log.debug("REMOVE key=" + key);
         data.remove(key);
     }
 
@@ -46,10 +44,11 @@ public class Model {
         // после каждой модификации данные сохраняются в файл в сортированном порядке ключа
         // TODO: пока не так
         long nowMillis = System.currentTimeMillis();
-        if (nowMillis < lastSaveMillis + SAVE_PERIOD) {
+        if (nowMillis < nextSaveMillis) {
             return;
         }
-        lastSaveMillis = nowMillis;
+        nextSaveMillis = (nowMillis / SAVE_PERIOD + 1) * SAVE_PERIOD;
+        log.info("next save after " + new Date(nextSaveMillis));
         try {
             serialize(progressHandler);
         } catch (IOException e) {
@@ -78,7 +77,7 @@ public class Model {
                 } catch (InterruptedException e) {
                     log.debug("interrupted");
                 }
-                log.info("saved " + off + "B of " + bytes.length + "B");
+                log.debug("saved " + off + "B of " + bytes.length + "B");
                 progressHandler.handleProgress(off * data.size() / bytes.length);
             }
         } finally {
