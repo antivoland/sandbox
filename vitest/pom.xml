@@ -40,7 +40,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>ru.antivoland.antiserver.Main</mainClass>
+                            <mainClass>ru.vi.vitest.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
