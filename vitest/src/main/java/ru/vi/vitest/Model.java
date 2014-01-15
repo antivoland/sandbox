@@ -35,10 +35,6 @@ public class Model {
         data.remove(key);
     }
 
-    public synchronized TreeMap<String, Double> sortedData() {
-        return new TreeMap<>(data);
-    }
-
     public synchronized void save(ProgressHandler progressHandler) {
         long nowMillis = System.currentTimeMillis();
         if (nowMillis < nextSaveMillis) {
@@ -47,13 +43,13 @@ public class Model {
         nextSaveMillis = (nowMillis / SAVE_PERIOD + 1) * SAVE_PERIOD;
         log.info("next save after " + new Date(nextSaveMillis));
         try {
-            serialize(progressHandler);
+            serialize(new TreeMap<>(data), progressHandler);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void serialize(ProgressHandler progressHandler) throws IOException {
+    private static void serialize(Map<String, Double> data, ProgressHandler progressHandler) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos);
         oos.writeObject(data);
