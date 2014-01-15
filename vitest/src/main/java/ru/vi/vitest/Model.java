@@ -40,9 +40,6 @@ public class Model {
     }
 
     public synchronized void save(ProgressHandler progressHandler) {
-        // операция автосохранения происходит после каждой модификации, но не чаще раза в 10 секунд
-        // после каждой модификации данные сохраняются в файл в сортированном порядке ключа
-        // TODO: пока не так
         long nowMillis = System.currentTimeMillis();
         if (nowMillis < nextSaveMillis) {
             return;
