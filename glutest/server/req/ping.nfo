@@ -1,0 +1,8 @@
+curl -i -H "Content-Type: application/json" -d '{"userId":"curl","time":0,"signature":"","payload":null}' http://127.0.0.1:8181/ping
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+Transfer-Encoding: chunked
+Server: Jetty(9.1.0.v20131115)
+
+{"code":0,"message":null,"payload":"PONG 10"}
