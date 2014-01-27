@@ -46,9 +46,9 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Response.cs" />
     <Compile Include="Transport\BusinessReq.cs" />
     <Compile Include="Transport\BusinessResp.cs" />
+    <Compile Include="Transport\Helper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

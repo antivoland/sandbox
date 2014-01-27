@@ -10,91 +10,32 @@ namespace Glutest.Client
 {
     class Program
     {
-        private static string host = "127.0.0.1";
-        private static int port = 8181;
-        private static string ping = "/ping";
+        private static string HOST = "127.0.0.1";
+        private static int PORT = 8181;
 
         static void Main(string[] args)
         {
-            Console.Out.WriteLine("Hello, World!");
-
-            Transport.BusinessReq<object> req = new Transport.BusinessReq<object>();
-            req.userId = "c#client";
-
-            string strReq = ToJson(req);
-
-            string path = "http://" + host + ":" + port + ping;
-            Transport.BusinessResp<object> resp = MakeRequest(path, strReq);
-
-
-
-
-            Console.In.Read();
-        }
-
-        public static T Deserialize<T>(string jsonString)
-        {
-
-            using (MemoryStream ms = new MemoryStream(Encoding.Unicode.GetBytes(jsonString)))
+            Console.Out.WriteLine("Type \"ping\" to ping or \"exit\" to exit.");
+            string cmd;
+            do
             {
-                DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(T));
-                return (T)serializer.ReadObject(ms);
-            }
-
-        }
-
-        public static Transport.BusinessResp<object> MakeRequest(string requestUrl, string req)
-        {
-            try
-            {
-
-                HttpWebRequest r = WebRequest.Create(requestUrl) as HttpWebRequest;
-                r.Method = "POST";
-                UTF8Encoding encoding = new UTF8Encoding();
-
-                byte[] byte1 = encoding.GetBytes(req);
-
-                // r.ContentLength = encoding.GetByteCount(req);
-                r.ContentLength = byte1.Length;
-                r.Credentials = CredentialCache.DefaultCredentials;
-                r.Accept = "application/json";
-                r.ContentType = "application/json";
-
-
-                Stream newStream = r.GetRequestStream();
-
-                newStream.Write(byte1, 0, byte1.Length);
-
-                using (HttpWebResponse response = r.GetResponse() as HttpWebResponse)
+                cmd = Console.In.ReadLine();
+                if ("ping".Equals(cmd))
                 {
-                    if (response.StatusCode != HttpStatusCode.OK)
-                        throw new Exception(String.Format(
-                        "Server error (HTTP {0}: {1}).",
-                        response.StatusCode,
-                        response.StatusDescription));
-                    DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Response));
-                    object objResponse = jsonSerializer.ReadObject(response.GetResponseStream());
-                    Transport.BusinessResp<object> jsonResponse
-                    = objResponse as Transport.BusinessResp<object>;
-                    return jsonResponse;
+                    ping();
                 }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                return null;
-            }
+            } while (!"exit".Equals(cmd));
         }
 
-        private static string ToJson<T>(T data)
+        private static void ping()
         {
-            DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(T));
+            Transport.BusinessReq<object> req = new Transport.BusinessReq<object>();
+            req.UserId = "c#client";
+            Console.Out.WriteLine("REQ " + Transport.Helper.ToJsonString<Transport.BusinessReq<object>>(req));
 
-            using (MemoryStream ms = new MemoryStream())
-            {
-                serializer.WriteObject(ms, data);
-                return Encoding.Default.GetString(ms.ToArray());
-            }
+            string url = "http://" + HOST + ":" + PORT + "/ping";
+            Transport.BusinessResp<object> resp = req.Execute<object>(url);
+            Console.Out.WriteLine("RESP " + Transport.Helper.ToJsonString<Transport.BusinessResp<object>>(resp));
         }
     }
 }
