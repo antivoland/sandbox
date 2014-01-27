@@ -19,7 +19,7 @@ public class Main {
         handler.setContextPath("/");
         handler.addFilter(GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
 
-        Server server = new Server(8181);
+        Server server = new Server(App.config.getInt("server.port"));
         server.setHandler(handler);
         server.start();
         server.join();

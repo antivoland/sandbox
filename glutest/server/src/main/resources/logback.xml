@@ -12,6 +12,10 @@
         </encoder>
     </appender>
 
+    <logger name="org.eclipse.jetty">
+        <level value="info"/>
+    </logger>
+
     <root level="${pom.xml.logLevel}">
         <appender-ref ref="file"/>
         <appender-ref ref="console"/>
