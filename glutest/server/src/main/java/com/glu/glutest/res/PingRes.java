@@ -39,7 +39,7 @@ public class PingRes {
             return resp;
         }
 
-        Profile profile = profileDAO.get(req.getUserId());
+        Profile profile = profileDAO.get(userId);
         if (profile == null) {
             profile = new Profile();
             profile.setId(req.getUserId());
