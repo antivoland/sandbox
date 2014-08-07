@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="xaFactory" class="org.apache.activemq.ActiveMQXAConnectionFactory">
+        <property name="brokerURL" value="http://127.0.0.1:5672"/>
+    </bean>
+
+    <!-- Configure the JMS connector; call init to register for recovery! -->
+    <bean id="connectionFactory" class="com.atomikos.jms.AtomikosConnectionFactoryBean"
+          init-method="init" destroy-method="close">
+        <property name="uniqueResourceName" value="amq1"/>
+        <property name="xaConnectionFactory" ref="xaFactory"/>
+    </bean>
+
+    <!-- Construct Atomikos UserTransactionManager, needed to configure Spring -->
+    <bean id="atomikosTransactionManager" class="com.atomikos.icatch.jta.UserTransactionManager"
+          init-method="init" destroy-method="close">
+        <!-- when close is called, should we force transactions to terminate or not? -->
+        <property name="forceShutdown" value="false"/>
+    </bean>
+
+    <!-- Also use Atomikos UserTransactionImp, needed to configure Spring -->
+    <bean id="atomikosUserTransaction" class="com.atomikos.icatch.jta.UserTransactionImp">
+        <property name="transactionTimeout" value="300"/>
+    </bean>
+
+    <!-- Configure the Spring framework to use JTA transactions from Atomikos -->
+    <bean id="jtaTransactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
+        <property name="transactionManager" ref="atomikosTransactionManager"/>
+        <property name="userTransaction" ref="atomikosUserTransaction"/>
+    </bean>
+
+    <!-- a class that implements javax.jms.MessageListener -->
+    <bean id="messageListener" class="ru.antivoland.xa.MessageHandler"/>
+
+    <!--
+        a kind of message listener pool that will listen to
+        messages posted to 'requestQueue' with 3 threads,
+        each one consuming a connection from bean 'connectionFactory'
+    -->
+    <bean id="messageListenerContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="transactionManager" ref="jtaTransactionManager"/>
+        <property name="connectionFactory" ref="connectionFactory"/>
+        <property name="messageListener" ref="messageListener"/>
+        <property name="destinationName" value="requestQueue"/>
+        <property name="concurrentConsumers" value="1"/>
+        <property name="receiveTimeout" value="3000"/>
+        <property name="sessionTransacted" value="true"/>
+    </bean>
+</beans>

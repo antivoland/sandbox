@@ -1,0 +1,16 @@
+server.port: 666
+
+rabbitmq:
+  host: 127.0.0.1
+  port: 5672
+  username: guest
+  password: guest
+
+spring.datasource:
+  driver-class-name: org.postgresql.Driver
+  url: jdbc:postgresql://127.0.0.1:5432/pbc?useUnicode=true&characterEncoding=UTF8
+  username: pbc_backend
+  password: MaSecretWord
+  test-while-idle: true
+  validation-query: SELECT 1
+  validation-interval: 30000

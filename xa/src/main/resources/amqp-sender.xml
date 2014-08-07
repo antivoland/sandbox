@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!-- The underying JMS vendor's XA connection factory. XA is required for transactional correctness. -->
+    <bean id="xaFactory" class="org.apache.activemq.ActiveMQXAConnectionFactory">
+        <property name="brokerURL" value="tcp://127.0.0.1:61616"/>
+        <property name="userName" value="guest"/>
+        <property name="password" value="guest"/>
+    </bean>
+
+    <!-- The Atomikos JTA-enabled TopicConnectionFactory, configured with the vendor's XA factory. -->
+    <bean id="topicConnectionFactoryBean" class="com.atomikos.jms.AtomikosConnectionFactoryBean"
+          init-method="init" destroy-method="close">
+        <!-- The unique resource name needed for recovery by the Atomikos core. -->
+        <property name="uniqueResourceName" value="TOPIC_BROKER"/>
+        <property name="xaConnectionFactory" ref="xaFactory"/>
+    </bean>
+
+    <!-- Where do we send updated time table info to? Note: this is a topic to allow multiple subscribers. -->
+    <bean id="topic" class="org.apache.activemq.command.ActiveMQTopic">
+        <property name="physicalName" value="TIMETABLE_TOPIC"/>
+    </bean>
+
+    <!-- JMS template for easy sending of timetable update messages with Spring -->
+    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="topicConnectionFactoryBean"/>
+        <property name="defaultDestination" ref="topic"/>
+        <property name="receiveTimeout" value="1000"/>
+        <property name="sessionTransacted" value="true"/>
+    </bean>
+</beans>
