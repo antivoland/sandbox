@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
@@ -13,7 +15,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 @Service
-@Transactional
 public class PersonService {
     private static final Logger log = LoggerFactory.getLogger(PersonService.class);
 
@@ -30,6 +31,7 @@ public class PersonService {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
+    @Transactional(propagation = Propagation.SUPPORTS)
     public Person find(String id) {
         return jdbcTemplate.queryForObject("SELECT * from person WHERE id = ?", PERSON_MAPPER, id);
     }
@@ -49,8 +51,14 @@ public class PersonService {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW ,isolation = Isolation.READ_UNCOMMITTED)
     public void updateState(String id) {
         Person person = find(id);
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         jdbcTemplate.update("UPDATE person SET state = ? WHERE id = ?", person.state + 1, id);
     }
 }
