@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.CannotSerializeTransactionException;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.ArrayList;
@@ -23,7 +24,6 @@ import java.util.concurrent.Future;
 @Configuration
 public class Application {
     private static final Logger log = LoggerFactory.getLogger(Application.class);
-
     private static final ExecutorService executor = Executors.newFixedThreadPool(5);
 
     public static void main(String[] args) throws Exception {
@@ -40,16 +40,17 @@ public class Application {
             futures.add(executor.submit(new Callable<Object>() {
                 @Override
                 public Object call() throws Exception {
-                    personService.updateState("Bob");
+                    try {
+                        personService.updateState("Bob");
+                    } catch (CannotSerializeTransactionException e) {
+                        return call();
+                    }
                     return null;
                 }
             }));
         }
 
-        for (Future future : futures) {
-            future.get();
-        }
-
+        for (Future future : futures) future.get();
         log.info(personService.findAll().toString());
     }
 }

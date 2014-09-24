@@ -1,3 +1,6 @@
+/**
+ * @see <a href="http://www.postgresql.org/docs/9.3/static/transaction-iso.html">PostgreSQL 9.3 Transaction Isolation</a>
+ */
 package ru.antivoland.sandbox.transactions.postgre;
 
 import org.slf4j.Logger;
@@ -31,15 +34,6 @@ public class PersonService {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    @Transactional(propagation = Propagation.SUPPORTS)
-    public Person find(String id) {
-        return jdbcTemplate.queryForObject("SELECT * from person WHERE id = ?", PERSON_MAPPER, id);
-    }
-
-    public List<Person> findAll() {
-        return jdbcTemplate.query("SELECT * from person", PERSON_MAPPER);
-    }
-
     public void add(String id) {
         log.info("Adding person " + id);
         jdbcTemplate.update("INSERT INTO person(id) VALUES (?)", id);
@@ -51,14 +45,23 @@ public class PersonService {
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW ,isolation = Isolation.READ_UNCOMMITTED)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.REPEATABLE_READ)
     public void updateState(String id) {
         Person person = find(id);
+        jdbcTemplate.update("UPDATE person SET state = ? WHERE id = ?", person.state + 1, id);
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        jdbcTemplate.update("UPDATE person SET state = ? WHERE id = ?", person.state + 1, id);
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public Person find(String id) {
+        return jdbcTemplate.queryForObject("SELECT * from person WHERE id = ?", PERSON_MAPPER, id);
+    }
+
+    public List<Person> findAll() {
+        return jdbcTemplate.query("SELECT * from person", PERSON_MAPPER);
     }
 }
