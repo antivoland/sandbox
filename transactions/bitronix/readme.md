@@ -1,0 +1,1 @@
+XA transaction management using Spring Boot, PostgreSQL, RabbitMQ and Bitronix
