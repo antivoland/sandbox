@@ -14,16 +14,16 @@ import java.io.Closeable;
 public class Application {
     public static void main(String[] args) throws Exception {
         ApplicationContext context = SpringApplication.run(Application.class, args);
-        AccountService service = context.getBean(AccountService.class);
-        AccountRepository repository = context.getBean(AccountRepository.class);
-        service.createAccountAndNotify("josh");
-        System.out.println("Count is " + repository.count());
+        PersonService service = context.getBean(PersonService.class);
+        PersonRepository repository = context.getBean(PersonRepository.class);
+        service.createPersonAndNotify("josh");
+        System.out.println("Count is " + repository.findAll().size());
         try {
-            service.createAccountAndNotify("error");
+            service.createPersonAndNotify("error");
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
         }
-        System.out.println("Count is " + repository.count());
+        System.out.println("Count is " + repository.findAll().size());
         Thread.sleep(100);
         ((Closeable) context).close();
     }

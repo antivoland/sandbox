@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class Messages {
-    @JmsListener(destination = "accounts")
+    @JmsListener(destination = "persons")
     public void onMessage(String content) {
         System.out.println("----> " + content);
     }
