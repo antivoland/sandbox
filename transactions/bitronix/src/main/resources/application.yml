@@ -7,8 +7,8 @@ spring.datasource:
   validation-query: SELECT 1
   validation-interval: 30000
 
-spring.hornetq:
-  mode: embedded
-  embedded:
-    enabled: true
-    queues: persons
+spring.rabbitmq:
+  host: 127.0.0.1
+  port: 5672
+  username: guest
+  password: guest
