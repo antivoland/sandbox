@@ -15,8 +15,8 @@ public class PersonService {
     PersonRepository personRepository;
 
     public void createPersonAndNotify(String id) {
-        this.rabbitTemplate.convertAndSend("persons", id);
-        this.personRepository.add(id);
+        rabbitTemplate.convertAndSend("persons", id);
+        personRepository.add(id);
         if ("error".equals(id)) {
             throw new RuntimeException("Simulated error");
         }
