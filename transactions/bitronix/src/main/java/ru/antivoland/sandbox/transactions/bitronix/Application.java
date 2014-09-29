@@ -2,6 +2,7 @@ package ru.antivoland.sandbox.transactions.bitronix;
 
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -55,6 +56,10 @@ public class Application {
         ApplicationContext context = SpringApplication.run(Application.class, args);
         PersonService service = context.getBean(PersonService.class);
         PersonRepository repository = context.getBean(PersonRepository.class);
+
+        RabbitTemplate rabbitTemplate = context.getBean(RabbitTemplate.class);
+        rabbitTemplate.setChannelTransacted(true);
+
         service.createPersonAndNotify("josh");
         System.out.println("Count is " + repository.findAll().size());
         try {
