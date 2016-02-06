@@ -1,3 +1,15 @@
+nominations:
+- physics (1)
+- chemistry (2)
+- medicine (3)
+- literature (4)
+- peace (5)
+- economics (6)
+
+``` 
+=IF(E740="физ";1;IF(E740="хим";2;IF(E740="мед";3;IF(E740="лит";4;IF(E740="мира";5;IF(E740="эк";6))))))
+```
+
 | Дата рождения | Имя |
 | :--- | :--- |
 | 30.11.1817 | [Моммзен Теодор](http://nobeliat.ru/laureat.php?id=3) | 
