@@ -35,7 +35,8 @@ children: 0..8
 year of birth:
 
 ```
-="19"&RIGHT(A2;2)
+=YEAR(A2)
+=COUNTIF(K$2:K$872;N2)
 ```
 
 | Дата рождения | Имя |
