@@ -1,20 +1,40 @@
 console.log("APP STARTED");
 
 var v = 20; // per day
+var started = new Date("2016-02-18T10:00");
+var now = new Date();
+var daysElapsed = (now.getTime() - started.getTime()) / 1000 / 60 / 60 / 24;
 
-console.log("countDaily(24) = " + countDaily(24));
-console.log("countWeekly(1, 24) = " + countWeekly(1, 24));
-console.log("countMonthly(1, 24) = " + countMonthly(1, 24));
-console.log("EXPECTING " + v + " FOR ALL");
+console.log("daily: " + countDaily(now, daysElapsed));
+console.log("weekly: " + countWeekly(now, daysElapsed));
+console.log("monthly: " + countMonthly(now, daysElapsed));
 
-function countDaily(hourOfDay) {
-    return hourOfDay / 24 * v;
+function countDaily(now, daysElapsed) {
+    if (daysElapsed < 0) return 0;
+    if (daysElapsed < 1) return daysElapsed * v;
+    else return hourOfDay(now) / 24 * v;
 }
 
-function countWeekly(dayOfWeek, hourOfDay) {
-    return (dayOfWeek - 1 + hourOfDay / 24) * v;
+function countWeekly(now, daysElapsed) {
+    if (daysElapsed < 0) return 0;
+    if (daysElapsed < dayOfWeek(now)) return daysElapsed * v;
+    else return (dayOfWeek(now) - 1 + hourOfDay(now) / 24) * v;
 }
 
-function countMonthly(dayOfMonth, hourOfDay) {
-    return (dayOfMonth - 1 + hourOfDay / 24) * v;
+function countMonthly(now, daysElapsed) {
+    if (daysElapsed < 0) return 0;
+    if (daysElapsed < dayOfMonth(now)) return daysElapsed * v;
+    else return (dayOfMonth(now) - 1 + hourOfDay(now) / 24) * v;
+}
+
+function hourOfDay(now) {
+    return now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+}
+
+function dayOfWeek(now) {
+    return now.getDay();
+}
+
+function dayOfMonth(now) {
+    return now.getDate();
 }
