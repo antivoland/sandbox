@@ -1,3 +1,44 @@
+nominations:
+- physics (1)
+- chemistry (2)
+- medicine (3)
+- literature (4)
+- peace (5)
+- economics (6)
+
+``` 
+=IF(E740="физ";1;IF(E740="хим";2;IF(E740="мед";3;IF(E740="лит";4;IF(E740="мира";5;IF(E740="эк";6))))))
+```
+
+marital status:
+- married (0)
+- single (1)
+
+```
+=IF(ISBLANK(C740);1;0)
+```
+
+sex:
+- male (0)
+- female (1)
+
+```
+=IF(ISBLANK(F740);0;1)
+```
+
+children: 0..8
+
+``` 
+=IF(D740="дети";1;IF(D740="дети2";2;IF(D740="дети3";3;IF(D740="дети4";4;IF(D740="дети5";5;IF(D740="дети6";6;IF(D740="дети7";7;IF(D740="дети8";8;0))))))))
+```
+
+year of birth:
+
+```
+=YEAR(A2)
+=COUNTIF(K$2:K$872;N2)
+```
+
 | Дата рождения | Имя |
 | :--- | :--- |
 | 30.11.1817 | [Моммзен Теодор](http://nobeliat.ru/laureat.php?id=3) | 
