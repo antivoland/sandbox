@@ -1,0 +1,16 @@
+server.port: 8111
+
+log.directory: ${user.dir}/log
+
+# SPRING LOG
+logging:
+  file: ${log.directory}/spring.log
+  level.*: INFO
+
+# ACCESS LOG
+server.tomcat.accesslog:
+  pattern: '%h %t %r %s %Dms'
+  directory: ${log.directory}
+  prefix: access
+  suffix: .log
+  enabled: true
