@@ -52,3 +52,7 @@ Content-Type: application/json
 DELETE /api/dev/users/1/check-out HTTP/1.1
 Host: 127.0.0.1:8081
 ```
+
+Проверить местоположение пользователя можно в методе `GET /api/dev/users/{id}/distance-to/{lon}:{lat}`.
+
+Наконец, метод для подсчёта соседей точки по ячейке: `GET /api/dev/points/{lon}:{lat}/neighbourhood`.

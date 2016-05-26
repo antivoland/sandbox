@@ -1,5 +1,6 @@
 package antivoland.oftest.api.dev;
 
+import antivoland.oftest.api.dev.domain.Distance;
 import antivoland.oftest.api.dev.domain.Failure;
 import antivoland.oftest.api.dev.domain.Point;
 import org.slf4j.Logger;
@@ -12,8 +13,15 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/api/dev/users", produces = MediaType.APPLICATION_JSON_VALUE)
 public class Users {
     private static final Logger LOG = LoggerFactory.getLogger(Users.class);
+    private static final String DISTANCE_TO = "Getting distance from user %s to point (%s, %s)";
     private static final String CHECKING_IN = "User %s checking in point (%s, %s)";
     private static final String CHECKING_OUT = "User %s checking out";
+
+    @RequestMapping(method = RequestMethod.GET, value = "{id}/distance-to/{lon}:{lat}")
+    public Distance distanceTo(@PathVariable("id") int id, @PathVariable("lon") double lon, @PathVariable("lat") double lat) {
+        LOG.debug(String.format(DISTANCE_TO, id, lon, lat));
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
 
     @RequestMapping(method = RequestMethod.PATCH, value = "{id}/check-in")
     public void checkIn(@PathVariable("id") int id, @RequestBody Point point) {
@@ -22,8 +30,8 @@ public class Users {
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = "{id}/check-out")
-    public void checkOut(@PathVariable("id") int userId) {
-        LOG.debug(String.format(CHECKING_OUT, userId));
+    public void checkOut(@PathVariable("id") int id) {
+        LOG.debug(String.format(CHECKING_OUT, id));
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
