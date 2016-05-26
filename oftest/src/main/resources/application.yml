@@ -1,0 +1,20 @@
+info.version: @project.artifactId@-@project.version@
+
+server.port: 8081
+
+log.directory: ${user.dir}/log
+
+# SPRING LOG
+logging:
+  file: ${log.directory}/spring.log
+  level.org.springframework: WARN
+  level.org.apache: WARN
+  level.antivoland.oftest: DEBUG
+
+# ACCESS LOG
+server.tomcat.accesslog:
+  pattern: '%h %t %r %s %Dms'
+  directory: ${log.directory}
+  prefix: access
+  suffix: .log
+  enabled: true
