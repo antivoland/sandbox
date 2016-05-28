@@ -3,12 +3,28 @@ package antivoland.oftest.model.dao;
 import antivoland.oftest.model.UserPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class UserPointDAO {
+    private static final RowMapper<UserPoint> ROW_MAPPER = (rs, i) -> {
+        int userId = rs.getInt("user_id");
+        double lat = rs.getDouble("lat");
+        double lon = rs.getDouble("lon");
+        return new UserPoint(userId, lat, lon);
+    };
+
     @Autowired
     JdbcTemplate jdbcTemplate;
+
+    public UserPoint find(int userId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT * FROM user_point WHERE user_id = ?",
+                ROW_MAPPER,
+                userId
+        );
+    }
 
     public void insert(UserPoint userPoint) {
         jdbcTemplate.update(

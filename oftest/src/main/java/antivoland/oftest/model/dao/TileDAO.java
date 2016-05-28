@@ -10,6 +10,15 @@ public class TileDAO {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
+    public double distanceError(int tileY, int tileX) {
+        return jdbcTemplate.queryForObject(
+                "SELECT distance_error FROM tile WHERE tile_y = ? AND tile_x = ?",
+                Double.class,
+                tileY,
+                tileX
+        );
+    }
+
     public int population(int y, int x) {
         int[] latBounds = Tile.bounds(y);
         int[] lonBounds = Tile.bounds(x);
