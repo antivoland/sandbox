@@ -34,12 +34,12 @@
 
 # Решение
 
-Для добавления или изменения пользовательской метки используется метод `PATCH /api/dev/users/{id}/check-in` с телом запроса вида `{"lat": double, "lon": double}`. Удалить метку пользователя можно посредством метода `DELETE /api/dev/users/{id}/check-out`.
+Для добавления или изменения пользовательской метки используются методы `PUT /api/dev/users/{id}` и `POST /api/dev/users/{id}` соответственно с телом запроса вида `{"lat": double, "lon": double}`. Удалить метку пользователя можно посредством метода `DELETE /api/dev/users/{id}/check-out`.
 
 Например, мы хотим добавить метку первого пользователя, находящегося в районе Эйфелевой башни:
 
 ```http
-PATCH /api/dev/users/1/check-in HTTP/1.1
+PUT /api/dev/users/1 HTTP/1.1
 Host: 127.0.0.1:8081
 Content-Type: application/json
 
@@ -49,10 +49,10 @@ Content-Type: application/json
 После чего её удалим:
 
 ```http
-DELETE /api/dev/users/1/check-out HTTP/1.1
+DELETE /api/dev/users/1 HTTP/1.1
 Host: 127.0.0.1:8081
 ```
 
-Проверить местоположение пользователя можно в методе `GET /api/dev/users/{id}/distance-to/{lat}:{lon}`.
+Проверить расстояние от пользователя до точки можно в методе `GET /api/dev/users/{id}/distance-to/{lat}:{lon}`.
 
-Наконец, метод для подсчёта соседей точки по ячейке: `GET /api/dev/points/{lat}:{lon}/neighbourhood`.
+Наконец, метод для подсчёта пользовательских меток: `GET /api/dev/points/{lat}:{lon}/neighbourhood`.
