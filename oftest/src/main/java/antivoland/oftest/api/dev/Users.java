@@ -17,15 +17,15 @@ public class Users {
     private static final String CHECKING_IN = "User %s checking in point (%s, %s)";
     private static final String CHECKING_OUT = "User %s checking out";
 
-    @RequestMapping(method = RequestMethod.GET, value = "{id}/distance-to/{lon}:{lat}")
-    public Distance distanceTo(@PathVariable("id") int id, @PathVariable("lon") double lon, @PathVariable("lat") double lat) {
-        LOG.debug(String.format(DISTANCE_TO, id, lon, lat));
+    @RequestMapping(method = RequestMethod.GET, value = "{id}/distance-to/{lat:.+}:{lon:.+}")
+    public Distance distanceTo(@PathVariable("id") int id, @PathVariable("lat") double lat, @PathVariable("lon") double lon) {
+        LOG.debug(String.format(DISTANCE_TO, id, lat, lon));
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @RequestMapping(method = RequestMethod.PATCH, value = "{id}/check-in")
     public void checkIn(@PathVariable("id") int id, @RequestBody Point point) {
-        LOG.debug(String.format(CHECKING_IN, id, point.lon, point.lat));
+        LOG.debug(String.format(CHECKING_IN, id, point.lat, point.lon));
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
