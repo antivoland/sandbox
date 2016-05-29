@@ -53,6 +53,6 @@ DELETE /api/dev/users/1 HTTP/1.1
 Host: 127.0.0.1:8081
 ```
 
-Проверить расстояние от пользователя до точки можно в методе `GET /api/dev/users/{id}/distance-to/{lat}:{lon}`.
+Проверить расстояние от пользователя до точки можно в методе `GET /api/dev/points/{lat}:{lon}/distance-to/{userId}`.
 
 Наконец, метод для подсчёта пользовательских меток: `GET /api/dev/points/{lat}:{lon}/neighbors`.
