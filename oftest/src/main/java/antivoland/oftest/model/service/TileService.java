@@ -17,8 +17,4 @@ public class TileService {
             throw new TileNotFoundException(tileY, tileX);
         }
     }
-
-    public int population(int tileY, int tileX) {
-        return tileDAO.population(tileY, tileX);
-    }
 }

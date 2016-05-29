@@ -1,5 +1,6 @@
 package antivoland.oftest.model.service;
 
+import antivoland.oftest.model.Tile;
 import antivoland.oftest.model.UserPoint;
 import antivoland.oftest.model.dao.UserPointDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,5 +38,11 @@ public class UserPointService {
 
     public void remove(int userId) {
         userPointDAO.delete(userId);
+    }
+
+    public int neighbors(double lat, double lon) {
+        int tileY = Tile.coordinate(lat);
+        int tileX = Tile.coordinate(lon);
+        return userPointDAO.population(tileY, tileX);
     }
 }

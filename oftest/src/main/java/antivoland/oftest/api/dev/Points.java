@@ -1,8 +1,7 @@
 package antivoland.oftest.api.dev;
 
 import antivoland.oftest.api.dev.domain.Failure;
-import antivoland.oftest.model.Tile;
-import antivoland.oftest.model.service.TileService;
+import antivoland.oftest.model.service.UserPointService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,17 +13,15 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/api/dev/points", produces = MediaType.APPLICATION_JSON_VALUE)
 public class Points {
     private static final Logger LOG = LoggerFactory.getLogger(Points.class);
-    private static final String NEIGHBOURHOOD = "Getting neighbourhood of point (%s, %s)";
+    private static final String NEIGHBORS = "Counting neighbors of point (%s, %s)";
 
     @Autowired
-    TileService tileService;
+    UserPointService userPointService;
 
-    @RequestMapping(method = RequestMethod.GET, value = "{lat:.+}:{lon:.+}/neighbourhood")
+    @RequestMapping(method = RequestMethod.GET, value = "{lat:.+}:{lon:.+}/neighbors")
     public int neighbourhood(@PathVariable("lat") double lat, @PathVariable("lon") double lon) {
-        LOG.debug(String.format(NEIGHBOURHOOD, lat, lon));
-        int tileY = Tile.coordinate(lat);
-        int tileX = Tile.coordinate(lon);
-        return tileService.population(tileY, tileX);
+        LOG.debug(String.format(NEIGHBORS, lat, lon));
+        return userPointService.neighbors(lat, lon);
     }
 
     @ExceptionHandler(UnsupportedOperationException.class)

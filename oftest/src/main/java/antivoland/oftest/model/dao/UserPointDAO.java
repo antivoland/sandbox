@@ -1,5 +1,6 @@
 package antivoland.oftest.model.dao;
 
+import antivoland.oftest.model.Tile;
 import antivoland.oftest.model.UserPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -48,6 +49,21 @@ public class UserPointDAO {
         jdbcTemplate.update(
                 "DELETE FROM user_point WHERE user_id = ?",
                 userId
+        );
+    }
+
+    public int population(int tileY, int tileX) {
+        int[] tileYBounds = Tile.bounds(tileY);
+        int[] tileXBounds = Tile.bounds(tileX);
+        return jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM user_point WHERE (lat > ? AND lat < ? OR lat = ?) AND (lon > ? AND lon < ? OR lon = ?)",
+                Integer.class,
+                tileYBounds[0],
+                tileYBounds[1],
+                tileY,
+                tileXBounds[0],
+                tileXBounds[1],
+                tileX
         );
     }
 }

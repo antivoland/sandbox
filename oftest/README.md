@@ -55,4 +55,4 @@ Host: 127.0.0.1:8081
 
 Проверить расстояние от пользователя до точки можно в методе `GET /api/dev/users/{id}/distance-to/{lat}:{lon}`.
 
-Наконец, метод для подсчёта пользовательских меток: `GET /api/dev/points/{lat}:{lon}/neighbourhood`.
+Наконец, метод для подсчёта пользовательских меток: `GET /api/dev/points/{lat}:{lon}/neighbors`.
