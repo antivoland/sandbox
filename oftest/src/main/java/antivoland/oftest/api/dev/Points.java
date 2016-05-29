@@ -32,10 +32,10 @@ public class Points {
     TileService tileService;
 
     @RequestMapping(method = RequestMethod.GET, value = "{lat:.+}:{lon:.+}/distance-to/{userId}")
-    public Distance distanceTo(
+    public Distance distance(
             @PathVariable("lat") double lat,
             @PathVariable("lon") double lon,
-            @PathVariable("userId") int userId) throws UserPointNotFoundException, TileNotFoundException {
+            @PathVariable("userId") int userId) throws TileNotFoundException, UserPointNotFoundException {
 
         LOG.debug(String.format(DISTANCE, lat, lon, userId));
         GlobalCoordinates from = new GlobalCoordinates(lat, lon);
@@ -52,9 +52,21 @@ public class Points {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "{lat:.+}:{lon:.+}/neighbors")
-    public int neighbourhood(@PathVariable("lat") double lat, @PathVariable("lon") double lon) {
+    public int neighbors(@PathVariable("lat") double lat, @PathVariable("lon") double lon) {
         LOG.debug(String.format(NEIGHBORS, lat, lon));
         return userPointService.neighbors(lat, lon);
+    }
+
+    @ExceptionHandler(TileNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Failure tileNotFound(TileNotFoundException e) {
+        return new Failure(e);
+    }
+
+    @ExceptionHandler(UserPointNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Failure userPointNotFound(UserPointNotFoundException e) {
+        return new Failure(e);
     }
 
     @ExceptionHandler(Exception.class)

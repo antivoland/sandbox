@@ -39,8 +39,8 @@ public class UserPointDAO {
     public int update(UserPoint userPoint) {
         return jdbcTemplate.update(
                 "UPDATE user_point SET lat = ?, lon = ? WHERE user_id = ?",
-                userPoint.lon,
                 userPoint.lat,
+                userPoint.lon,
                 userPoint.userId
         );
     }
