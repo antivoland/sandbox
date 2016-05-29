@@ -32,7 +32,6 @@ public class TenLittleNiggersTest {
     private static final Logger LOG = LoggerFactory.getLogger(TenLittleNiggersTest.class);
     private static final String USERS_URL = "/api/dev/users/%s";
     private static final String NEIGHBORS_URL = "/api/dev/points/%s:%s/neighbors";
-    private static final String DISTANCE_URL = "/api/dev/points/%s:%s/distance-to/%s";
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @Autowired
@@ -52,8 +51,8 @@ public class TenLittleNiggersTest {
 
     @Test
     public void test() throws Exception {
-        Point domodedovo = new Point(55.408611, 37.906111);
-        placeBoysAt(domodedovo);
+        Point upperLeftCorner = new Point(55.000000, 37.000000);
+        placeBoysAt(upperLeftCorner);
 
         LOG.info("Ten little nigger boys went out to dine");
         Assert.assertEquals(10, countBoys());
