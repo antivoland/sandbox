@@ -8,3 +8,5 @@ robot/target/
 symbiomark/pos/target
 symbiomark/pos/log
 kellyservices/target
+oftest/log
+oftest/target
