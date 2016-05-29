@@ -38,16 +38,15 @@ public class Points {
             @PathVariable("userId") int userId) throws TileNotFoundException, UserPointNotFoundException {
 
         LOG.debug(String.format(DISTANCE, lat, lon, userId));
-        GlobalCoordinates from = new GlobalCoordinates(lat, lon);
-        UserPoint userPoint = userPointService.get(userId);
-        GlobalCoordinates to = new GlobalCoordinates(userPoint.lat, userPoint.lon);
-        GeodeticCurve curve = new GeodeticCalculator().calculateGeodeticCurve(Ellipsoid.WGS84, from, to);
-
-        double distance = curve.getEllipsoidalDistance();
-
         int tileY = Tile.coordinate(lat);
         int tileX = Tile.coordinate(lon);
         double distanceError = tileService.distanceError(tileY, tileX);
+        UserPoint userPoint = userPointService.get(userId);
+
+        GlobalCoordinates from = new GlobalCoordinates(lat, lon);
+        GlobalCoordinates to = new GlobalCoordinates(userPoint.lat, userPoint.lon);
+        GeodeticCurve curve = new GeodeticCalculator().calculateGeodeticCurve(Ellipsoid.WGS84, from, to);
+        double distance = curve.getEllipsoidalDistance();
         return distance < distanceError ? Distance.CLOSE : Distance.FAR;
     }
 
