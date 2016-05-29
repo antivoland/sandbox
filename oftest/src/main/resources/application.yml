@@ -9,7 +9,7 @@ logging:
   file: ${log.directory}/spring.log
   level.org.springframework: WARN
   level.org.apache: WARN
-  level.antivoland.oftest: DEBUG
+  level.antivoland.oftest: INFO
 
 # ACCESS LOG
 server.tomcat.accesslog:

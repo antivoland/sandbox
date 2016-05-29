@@ -26,13 +26,13 @@ public class Users {
 
     @RequestMapping(method = RequestMethod.PUT, value = "{id}")
     public void create(@PathVariable("id") int id, @RequestBody Point point) throws UserPointAlreadyExistsException {
-        LOG.debug(String.format(CREATE, id, point.lat, point.lon));
+        LOG.debug(String.format(CREATE, point.lat, point.lon, id));
         userPointService.create(new UserPoint(id, point.lat, point.lon));
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "{id}")
     public void track(@PathVariable("id") int id, @RequestBody Point point) throws UserPointNotFoundException {
-        LOG.debug(String.format(TRACK, id, point.lat, point.lon));
+        LOG.debug(String.format(TRACK, point.lat, point.lon, id));
         userPointService.track(new UserPoint(id, point.lat, point.lon));
     }
 
