@@ -61,6 +61,8 @@ public class ManegeMeasurementsTest {
 
         moveTo(NORTH_EAST_CORNER);
         Assert.assertEquals(Distance.FAR, distanceTo(SOUTH_WEST_CORNER));
+
+        cleanUp();
     }
 
     private void startAt(Point point) throws Exception {
@@ -75,6 +77,13 @@ public class ManegeMeasurementsTest {
         MockHttpServletRequestBuilder request = post(String.format(USERS_URL, MANEGE))
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(MAPPER.writeValueAsString(point));
+
+        usersMock.perform(request).andExpect(status().isOk());
+    }
+
+    private void cleanUp() throws Exception {
+        MockHttpServletRequestBuilder request = delete(String.format(USERS_URL, MANEGE))
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
 
         usersMock.perform(request).andExpect(status().isOk());
     }
