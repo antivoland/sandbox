@@ -10,3 +10,5 @@ symbiomark/pos/log
 kellyservices/target
 oftest/log
 oftest/target
+*.iml
+perfect-square/target
