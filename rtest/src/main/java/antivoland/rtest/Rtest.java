@@ -1,19 +1,42 @@
 package antivoland.rtest;
 
+import antivoland.rtest.api.dev.Transfers;
+import antivoland.rtest.api.dev.Users;
+import antivoland.rtest.api.dev.Wallets;
 import antivoland.rtest.model.Transfer;
 import antivoland.rtest.model.TransferException;
 import antivoland.rtest.model.User;
 import antivoland.rtest.model.Wallet;
+import com.google.inject.Guice;
+import com.google.inject.Scopes;
+import com.google.inject.Stage;
+import com.google.inject.servlet.GuiceFilter;
+import com.google.inject.servlet.ServletModule;
+import com.sun.jersey.api.json.JSONConfiguration;
+import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
+import javax.servlet.DispatcherType;
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Rtest {
+    private static final Logger LOG = LoggerFactory.getLogger(Rtest.class);
+    private static final int PORT = 10111; // todo: move to config
     private final static Map<String, User> users = new HashMap<>();
     private final static Map<String, Wallet> wallets = new HashMap<>();
 
-    public static void main(String[] args) throws TransferException {
+    public static void main(String[] args) throws Exception {
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        SLF4JBridgeHandler.install();
+
         putUser("merlin", User.Gender.male);
         putWallet("merlin", "gbp", BigDecimal.TEN);
 
@@ -26,9 +49,27 @@ public class Rtest {
         transfer(Wallet.id("merlin", "gbp"), Wallet.id("alice", "gbp"), BigDecimal.ONE);
         transfer(Wallet.id("merlin", "gbp"), Wallet.id("bob", "sos"), BigDecimal.ONE);
 
-        System.out.println("Merlin GBP balance: " + wallets.get(Wallet.id("merlin", "gbp")).balance + " (expecting 8)");
-        System.out.println("Alice GBP balance: " + wallets.get(Wallet.id("alice", "gbp")).balance + " (expecting 1)");
-        System.out.println("Bob SOS balance: " + wallets.get(Wallet.id("bob", "sos")).balance + " (expecting 745.404)");
+        LOG.info("Merlin GBP balance: " + wallets.get(Wallet.id("merlin", "gbp")).balance + " (expecting 8)");
+        LOG.info("Alice GBP balance: " + wallets.get(Wallet.id("alice", "gbp")).balance + " (expecting 1)");
+        LOG.info("Bob SOS balance: " + wallets.get(Wallet.id("bob", "sos")).balance + " (expecting 745.404)");
+
+        Guice.createInjector(Stage.PRODUCTION,
+                new ServletModule() {
+                    @Override
+                    protected void configureServlets() {
+                        serve("/*").with(GuiceContainer.class, Collections.singletonMap(JSONConfiguration.FEATURE_POJO_MAPPING, "true"));
+
+                        bind(Users.class).in(Scopes.SINGLETON);
+                        bind(Wallets.class).in(Scopes.SINGLETON);
+                        bind(Transfers.class).in(Scopes.SINGLETON);
+                    }
+                });
+
+        Server server = new Server(PORT);
+        ServletContextHandler handler = new ServletContextHandler(server, "/");
+        handler.addFilter(GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
+        server.start();
+        server.join();
     }
 
     private static void putUser(String id, User.Gender gender) {
