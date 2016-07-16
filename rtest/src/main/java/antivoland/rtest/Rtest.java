@@ -14,13 +14,13 @@ public class Rtest {
     private final static Map<String, Wallet> wallets = new HashMap<>();
 
     public static void main(String[] args) throws TransferException {
-        putUser("merlin");
+        putUser("merlin", User.Gender.male);
         putWallet("merlin", "gbp", BigDecimal.TEN);
 
-        putUser("alice");
+        putUser("alice", User.Gender.female);
         putWallet("alice", "gbp", BigDecimal.ZERO);
 
-        putUser("bob");
+        putUser("bob", User.Gender.male);
         putWallet("bob", "sos", BigDecimal.ZERO);
 
         transfer(Wallet.id("merlin", "gbp"), Wallet.id("alice", "gbp"), BigDecimal.ONE);
@@ -31,8 +31,8 @@ public class Rtest {
         System.out.println("Bob SOS balance: " + wallets.get(Wallet.id("bob", "sos")).balance + " (expecting 745.404)");
     }
 
-    private static void putUser(String id) {
-        User user = new User(id);
+    private static void putUser(String id, User.Gender gender) {
+        User user = new User(id, gender);
         users.put(user.id, user);
     }
 

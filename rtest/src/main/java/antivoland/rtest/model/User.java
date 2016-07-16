@@ -1,9 +1,13 @@
 package antivoland.rtest.model;
 
 public class User {
-    public final String id;
+    public enum Gender {male, female}
 
-    public User(String id) {
+    public final String id;
+    public final Gender gender;
+
+    public User(String id, Gender gender) {
         this.id = id;
+        this.gender = gender;
     }
 }

@@ -27,11 +27,13 @@ Seems that main problem of this test assignment is how to make atomic transfers.
 First section of our API will be about user management:
 
 - method `PUT /api/dev/users/{id}` allows us to create new user
+- method `GET /api/dev/users/{id}` provides some user info
 - method `DELETE /api/dev/users/{id}` blocks existing user
 
 Next section will serve users wallets:
 
 - method `PUT /api/dev/users/{id}/wallets/{currency}` for wallet creation with some initial balance
+- method `GET /api/dev/users/{id}/wallets/{currency}` for wallet details
 - method `DELETE /api/dev/users/{id}/wallets/{currency}` for wallet blocking
 
 Assume that every user can store his funds in any currency (in my implementation I will use [ISO 4217](http://www.iso.org/iso/home/standards/currency_codes.htm) three-letter codes in lower case).
