@@ -6,6 +6,8 @@ import antivoland.rtest.model.transfer.Transfer;
 import antivoland.rtest.model.transfer.TransferAlreadyExistsException;
 import antivoland.rtest.model.transfer.TransferNotFoundException;
 import antivoland.rtest.model.transfer.TransferService;
+import antivoland.rtest.model.wallet.WalletHasInsufficientFundsException;
+import antivoland.rtest.model.wallet.WalletNotFoundException;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -30,6 +32,15 @@ public class Transfers {
             transferService.put(id, details.from, details.to, details.currency, details.amount);
         } catch (TransferAlreadyExistsException e) {
             throw new Failure(e).withStatus(Response.Status.CONFLICT);
+        }
+        try {
+            transferService.execute(id);
+        } catch (TransferNotFoundException e) {
+            throw new Failure(e).withStatus(Response.Status.INTERNAL_SERVER_ERROR);
+        } catch (WalletNotFoundException e) {
+            throw new Failure(e).withStatus(Response.Status.BAD_REQUEST);
+        } catch (WalletHasInsufficientFundsException e) {
+            throw new Failure(e).withStatus(Response.Status.FORBIDDEN);
         }
     }
 
