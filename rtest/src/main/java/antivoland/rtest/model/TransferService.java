@@ -2,31 +2,26 @@ package antivoland.rtest.model;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
 
 public class TransferService {
-    private final Map<String, Transfer> transfers = new HashMap<>();
+    private final TransferStorage transferStorage;
     private final WalletService walletService;
 
     @Inject
-    public TransferService(WalletService walletService) {
+    public TransferService(TransferStorage transferStorage, WalletService walletService) {
+        this.transferStorage = transferStorage;
         this.walletService = walletService;
     }
 
     public void put(String id, String from, String to, String currency, BigDecimal amount) throws TransferAlreadyExistsException {
-        if (transfers.containsKey(id)) {
+        Transfer transfer = new Transfer(id, from, to, currency, amount);
+        if (!transferStorage.insert(id, transfer)) {
             throw new TransferAlreadyExistsException(id);
         }
-        transfers.put(id, new Transfer(id, from, to, currency, amount));
     }
 
     public Transfer get(String id) throws TransferNotFoundException {
-        Transfer transfer = transfers.get(id);
-        if (transfer == null) {
-            throw new TransferNotFoundException(id);
-        }
-        return transfer;
+        return transferStorage.get(id);
     }
 
     public void execute(String id) throws TransferNotFoundException, WalletNotFoundException, WalletHasInsufficientFundsException {

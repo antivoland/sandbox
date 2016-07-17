@@ -34,3 +34,5 @@ So let's define some endpoints to handle wallet-to-wallet transfers:
 
 - method `PUT /api/dev/transfers/{id}` initiates transfer
 - method `GET /api/dev/transfers/{id}` provides some transfer-specific information (status, timestamp etc.)
+
+I want all entities to have a version to manage them with non-blocking and transaction-free storage.

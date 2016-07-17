@@ -2,9 +2,9 @@ package antivoland.rtest;
 
 import antivoland.rtest.api.dev.Transfers;
 import antivoland.rtest.api.dev.Wallets;
-import antivoland.rtest.model.Converter;
-import antivoland.rtest.model.TransferService;
-import antivoland.rtest.model.WalletService;
+import antivoland.rtest.model.*;
+import antivoland.rtest.storage.TransferDummyStorage;
+import antivoland.rtest.storage.WalletDummyStorage;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Guice;
@@ -46,12 +46,14 @@ public class Rtest {
                 jacksonJsonProvider.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                 bind(JacksonJsonProvider.class).toInstance(jacksonJsonProvider);
 
-                bind(WalletService.class).in(Scopes.SINGLETON);
-                bind(TransferService.class).in(Scopes.SINGLETON);
-
                 bind(Converter.class).to(DummyConverter.class);
 
+                bind(WalletStorage.class).to(WalletDummyStorage.class);
+                bind(WalletService.class).in(Scopes.SINGLETON);
                 bind(Wallets.class).in(Scopes.SINGLETON);
+
+                bind(TransferStorage.class).to(TransferDummyStorage.class);
+                bind(TransferService.class).in(Scopes.SINGLETON);
                 bind(Transfers.class).in(Scopes.SINGLETON);
 
                 bind(Dummy.class).in(Scopes.SINGLETON);
@@ -68,6 +70,8 @@ public class Rtest {
     }
 
     public static class Dummy {
+        private static final String MESSAGE = "%s %s wallet: balance=%s, version=%s (expecting %s and %s respectively)";
+
         private final WalletService walletService;
         private final TransferService transferService;
 
@@ -90,9 +94,9 @@ public class Rtest {
             transferService.execute("2");
             transferService.execute("3");
 
-            LOG.info("Merlin GBP balance: " + walletService.get("merlin:gbp").balance + " (expecting almost 8)");
-            LOG.info("Alice GBP balance: " + walletService.get("alice:gbp").balance + " (expecting 1)");
-            LOG.info("Bob SOS balance: " + walletService.get("bob:sos").balance + " (expecting almost 740)");
+            LOG.info(String.format(MESSAGE, "Merlin", "GBP", walletService.get("merlin:gbp").balance, walletService.get("merlin:gbp").version, "almost 8", 3));
+            LOG.info(String.format(MESSAGE, "Alice", "GBP", walletService.get("alice:gbp").balance, walletService.get("alice:gbp").version, 1, 1));
+            LOG.info(String.format(MESSAGE, "Bob", "SOS", walletService.get("bob:sos").balance, walletService.get("bob:sos").version, "almost 740", 2));
         }
     }
 
