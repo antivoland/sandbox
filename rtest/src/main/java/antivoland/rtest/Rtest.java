@@ -3,10 +3,7 @@ package antivoland.rtest;
 import antivoland.rtest.api.dev.Transfers;
 import antivoland.rtest.api.dev.Users;
 import antivoland.rtest.api.dev.Wallets;
-import antivoland.rtest.model.Transfer;
-import antivoland.rtest.model.TransferException;
-import antivoland.rtest.model.User;
-import antivoland.rtest.model.Wallet;
+import antivoland.rtest.model.*;
 import com.google.inject.Guice;
 import com.google.inject.Scopes;
 import com.google.inject.Stage;
@@ -34,6 +31,7 @@ public class Rtest {
     private final static Map<String, Wallet> wallets = new HashMap<>();
 
     public static void main(String[] args) throws Exception {
+        // replace jersey logger with slf4j
         SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();
 
@@ -53,17 +51,19 @@ public class Rtest {
         LOG.info("Alice GBP balance: " + wallets.get(Wallet.id("alice", "gbp")).balance + " (expecting 1)");
         LOG.info("Bob SOS balance: " + wallets.get(Wallet.id("bob", "sos")).balance + " (expecting 745.404)");
 
-        Guice.createInjector(Stage.PRODUCTION,
-                new ServletModule() {
-                    @Override
-                    protected void configureServlets() {
-                        serve("/*").with(GuiceContainer.class, Collections.singletonMap(JSONConfiguration.FEATURE_POJO_MAPPING, "true"));
+        Guice.createInjector(Stage.PRODUCTION, new ServletModule() {
+            @Override
+            protected void configureServlets() {
+                serve("/*").with(GuiceContainer.class, Collections.singletonMap(JSONConfiguration.FEATURE_POJO_MAPPING, "true"));
 
-                        bind(Users.class).in(Scopes.SINGLETON);
-                        bind(Wallets.class).in(Scopes.SINGLETON);
-                        bind(Transfers.class).in(Scopes.SINGLETON);
-                    }
-                });
+                bind(Converter.class).in(Scopes.SINGLETON);
+                bind(WalletService.class).in(Scopes.SINGLETON);
+
+                bind(Users.class).in(Scopes.SINGLETON);
+                bind(Wallets.class).in(Scopes.SINGLETON);
+                bind(Transfers.class).in(Scopes.SINGLETON);
+            }
+        });
 
         Server server = new Server(PORT);
         ServletContextHandler handler = new ServletContextHandler(server, "/");

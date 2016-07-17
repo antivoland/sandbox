@@ -1,7 +1,6 @@
-Test assignment
-===============
+# Test assignment
 
-# Abstract
+## Abstract
 
 Design and implement a RESTful API (including data model and the backing implementation) for money transfers between internal users/accounts.
 
@@ -20,7 +19,7 @@ Implicit requirements:
 
 Please put your work on github or bitbucket.
 
-# Solution
+## Solution
 
 Seems that main problem of this test assignment is how to make atomic transfers.
 
