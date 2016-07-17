@@ -28,7 +28,7 @@ First section of our API will be about wallet management:
 - method `PUT /api/dev/wallets/{id}` allows us to create wallet with some initial balance in specified currency (in my implementation I will use [ISO 4217](http://www.iso.org/iso/home/standards/currency_codes.htm) three-letter codes)
 - method `GET /api/dev/wallets/{id}` provides wallet details such as currency and balance
 
-Assume we can transfer funds between wallets in the same currency without any fees. Otherwise we should use some currency conversion service (let's use [fixer API](http://fixer.io) for instance) and we also may want to specify some conversion fee. It may be implemented as a separate microservice (find out possible design [currency converter design](https://github.com/platbox/x-rates-java-test/blob/master/README.md) which I suggest senior-level applicants to implement).
+Assume we can transfer funds between wallets in the same currency without any fees. Otherwise we should use some currency conversion service (let's use [fixer API](http://fixer.io) for instance) and we also may want to specify some conversion fee. It may be implemented as a separate microservice (find out my possible design [currency converter design](https://github.com/platbox/x-rates-java-test/blob/master/README.md) which I suggest senior-level applicants to implement).
 
 So let's define some endpoints to handle wallet-to-wallet transfers:
 
