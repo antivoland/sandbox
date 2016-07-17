@@ -1,4 +1,6 @@
-package antivoland.rtest.model;
+package antivoland.rtest.model.wallet;
+
+import antivoland.rtest.model.Versioned;
 
 import java.math.BigDecimal;
 

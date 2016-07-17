@@ -2,10 +2,10 @@ package antivoland.rtest.api.dev;
 
 import antivoland.rtest.api.dev.domain.Failure;
 import antivoland.rtest.api.dev.domain.WalletDetails;
-import antivoland.rtest.model.Wallet;
-import antivoland.rtest.model.WalletAlreadyExistsException;
-import antivoland.rtest.model.WalletNotFoundException;
-import antivoland.rtest.model.WalletService;
+import antivoland.rtest.model.wallet.Wallet;
+import antivoland.rtest.model.wallet.WalletAlreadyExistsException;
+import antivoland.rtest.model.wallet.WalletNotFoundException;
+import antivoland.rtest.model.wallet.WalletService;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;

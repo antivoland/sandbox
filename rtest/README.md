@@ -35,4 +35,4 @@ So let's define some endpoints to handle wallet-to-wallet transfers:
 - method `PUT /api/dev/transfers/{id}` initiates transfer
 - method `GET /api/dev/transfers/{id}` provides some transfer-specific information (status, timestamp etc.)
 
-I want all entities to have a version to manage them with non-blocking and transaction-free storage.
+I want all entities to have a version to manage them with non-blocking and transaction-free storage. For test purposes I've put in-memory implementation, but the same technic may be used with SQL- and KV- storage (INSERT/UPDATE queries with entity version checking and almost the same trick with MongoDB for instance).

@@ -1,4 +1,8 @@
-package antivoland.rtest.model;
+package antivoland.rtest.model.transfer;
+
+import antivoland.rtest.model.wallet.WalletHasInsufficientFundsException;
+import antivoland.rtest.model.wallet.WalletNotFoundException;
+import antivoland.rtest.model.wallet.WalletService;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;

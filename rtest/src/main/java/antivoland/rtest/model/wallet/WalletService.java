@@ -1,6 +1,7 @@
-package antivoland.rtest.model;
+package antivoland.rtest.model.wallet;
 
 import antivoland.rtest.RtestConfig;
+import antivoland.rtest.model.Converter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +36,7 @@ public class WalletService {
     }
 
     public void withdraw(String id, String currency, BigDecimal amount) throws WalletNotFoundException, WalletHasInsufficientFundsException {
-        LOG.info(String.format(WITHDRAW, amount, currency, id));
+        LOG.debug(String.format(WITHDRAW, amount, currency, id));
         Wallet wallet;
         do {
             wallet = get(id);
@@ -54,7 +55,7 @@ public class WalletService {
     }
 
     public void charge(String id, String currency, BigDecimal amount) throws WalletNotFoundException {
-        LOG.info(String.format(CHARGE, amount, currency, id));
+        LOG.debug(String.format(CHARGE, amount, currency, id));
         Wallet wallet;
         do {
             wallet = get(id);

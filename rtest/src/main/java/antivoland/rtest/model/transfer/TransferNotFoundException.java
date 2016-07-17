@@ -1,4 +1,4 @@
-package antivoland.rtest.model;
+package antivoland.rtest.model.transfer;
 
 public class TransferNotFoundException extends Exception {
     private static final String MESSAGE = "Transfer '%s' not found";

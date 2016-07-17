@@ -2,7 +2,11 @@ package antivoland.rtest;
 
 import antivoland.rtest.api.dev.Transfers;
 import antivoland.rtest.api.dev.Wallets;
-import antivoland.rtest.model.*;
+import antivoland.rtest.model.Converter;
+import antivoland.rtest.model.transfer.TransferService;
+import antivoland.rtest.model.transfer.TransferStorage;
+import antivoland.rtest.model.wallet.WalletService;
+import antivoland.rtest.model.wallet.WalletStorage;
 import antivoland.rtest.storage.TransferDummyStorage;
 import antivoland.rtest.storage.WalletDummyStorage;
 import com.fasterxml.jackson.databind.DeserializationFeature;

@@ -2,10 +2,10 @@ package antivoland.rtest.api.dev;
 
 import antivoland.rtest.api.dev.domain.Failure;
 import antivoland.rtest.api.dev.domain.TransferDetails;
-import antivoland.rtest.model.Transfer;
-import antivoland.rtest.model.TransferAlreadyExistsException;
-import antivoland.rtest.model.TransferNotFoundException;
-import antivoland.rtest.model.TransferService;
+import antivoland.rtest.model.transfer.Transfer;
+import antivoland.rtest.model.transfer.TransferAlreadyExistsException;
+import antivoland.rtest.model.transfer.TransferNotFoundException;
+import antivoland.rtest.model.transfer.TransferService;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;

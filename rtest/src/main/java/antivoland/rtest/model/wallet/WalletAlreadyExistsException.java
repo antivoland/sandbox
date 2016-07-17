@@ -1,4 +1,4 @@
-package antivoland.rtest.model;
+package antivoland.rtest.model.wallet;
 
 public class WalletAlreadyExistsException extends Exception {
     private static final String MESSAGE = "Wallet '%s' already exists";
