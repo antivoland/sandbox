@@ -44,12 +44,12 @@ public class WalletServiceTest {
         start.countDown();
         finish.await();
 
+        Thread.sleep(1000);
+
         Wallet wall = walletService.get(WALL);
-        LOG.info(wall.balance + " bottles of beer on the wall...");
+        LOG.info(String.format("%s bottles of beer on the wall, %s bottles of beer", wall.balance, wall.balance));
         Assert.assertTrue(new BigDecimal(String.valueOf(BOTTLES)).compareTo(wall.balance) == 0);
         Assert.assertEquals(BOTTLES, wall.version);
-
-        LOG.info("Bar is open!");
 
         start = new CountDownLatch(1);
         finish = new CountDownLatch(BOTTLES);
@@ -59,8 +59,10 @@ public class WalletServiceTest {
         start.countDown();
         finish.await();
 
+        Thread.sleep(1000);
+
         wall = walletService.get(WALL);
-        LOG.info(wall.balance + " bottles of beer on the wall...");
+        LOG.info(String.format("Take %s down, pass them around, %s bottles of beer on the wall...", BOTTLES, wall.balance));
         Assert.assertTrue(BigDecimal.ZERO.compareTo(wall.balance) == 0);
         Assert.assertEquals(BOTTLES * 2, wall.version);
     }
@@ -69,7 +71,7 @@ public class WalletServiceTest {
         return () -> {
             try {
                 start.await();
-                LOG.info("Putting bottle No " + no);
+                LOG.debug("Putting bottle No " + no);
                 walletService.charge(WALL, BOTTLE, BigDecimal.ONE);
             } catch (Exception e) {
                 throw new Error(e);
@@ -83,7 +85,7 @@ public class WalletServiceTest {
         return () -> {
             try {
                 start.await();
-                LOG.info("Drinking bottle No " + no);
+                LOG.debug("Drinking bottle No " + no);
                 walletService.withdraw(WALL, BOTTLE, BigDecimal.ONE);
             } catch (Exception e) {
                 throw new Error(e);

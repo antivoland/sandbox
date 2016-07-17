@@ -41,10 +41,10 @@ abstract class DummyStorage<KEY, VALUE extends Versioned> implements Storage<KEY
 
     @Override
     public boolean update(KEY key, VALUE value) {
-        Wrapper<VALUE> current = storage.get(key);
+        Wrapper<VALUE> expecting = new Wrapper<>(copy(value));
         Wrapper<VALUE> wrapped = new Wrapper<>(copy(value));
         wrapped.value.increaseVersion();
-        return storage.replace(key, current, wrapped);
+        return storage.replace(key, expecting, wrapped);
     }
 
     protected abstract VALUE copy(VALUE value);
