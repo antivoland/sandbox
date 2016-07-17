@@ -1,5 +1,6 @@
 package antivoland.rtest.model;
 
+import antivoland.rtest.RtestConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,14 +13,15 @@ public class WalletService {
     private static final Logger LOG = LoggerFactory.getLogger(WalletService.class);
     private static final String WITHDRAW = "Withdrawing %s %S from '%s'";
     private static final String CHARGE = "Charging %s %S to '%s'";
-    private static final BigDecimal CONVERSION_FEE = BigDecimal.ZERO; // todo: move to config and replace with non-zero value
 
     private final Map<String, Wallet> wallets = new HashMap<>();
     private final Converter converter;
+    private final RtestConfig config;
 
     @Inject
-    public WalletService(Converter converter) {
+    public WalletService(Converter converter, RtestConfig config) {
         this.converter = converter;
+        this.config = config;
     }
 
     public void put(String id, String currency, BigDecimal balance) throws WalletAlreadyExistsException {
@@ -44,7 +46,7 @@ public class WalletService {
         if (wallet.currency.equals(currency)) {
             newBalance = wallet.balance.subtract(amount);
         } else {
-            BigDecimal converted = converter.convert(currency, wallet.currency, amount, CONVERSION_FEE);
+            BigDecimal converted = converter.convert(currency, wallet.currency, amount, config.conversionFee);
             newBalance = wallet.balance.subtract(converted);
         }
         if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
@@ -60,7 +62,7 @@ public class WalletService {
         if (wallet.currency.equals(currency)) {
             newBalance = wallet.balance.add(amount);
         } else {
-            BigDecimal converted = converter.convert(currency, wallet.currency, amount, CONVERSION_FEE);
+            BigDecimal converted = converter.convert(currency, wallet.currency, amount, config.conversionFee);
             newBalance = wallet.balance.add(converted);
         }
         wallet.balance = newBalance;

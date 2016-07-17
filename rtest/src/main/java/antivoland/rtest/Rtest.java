@@ -5,7 +5,10 @@ import antivoland.rtest.api.dev.Wallets;
 import antivoland.rtest.model.Converter;
 import antivoland.rtest.model.TransferService;
 import antivoland.rtest.model.WalletService;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.google.inject.Scopes;
 import com.google.inject.Stage;
 import com.google.inject.servlet.GuiceFilter;
@@ -26,17 +29,22 @@ import java.util.EnumSet;
 
 public class Rtest {
     private static final Logger LOG = LoggerFactory.getLogger(Rtest.class);
-    private static final int PORT = 10111; // todo: move to config
 
     public static void main(String[] args) throws Exception {
         // replace jersey logger with slf4j
         SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();
 
-        Guice.createInjector(Stage.PRODUCTION, new ServletModule() {
+        Injector injector = Guice.createInjector(Stage.PRODUCTION, new ServletModule() {
             @Override
             protected void configureServlets() {
                 serve("/*").with(GuiceContainer.class, Collections.singletonMap(JSONConfiguration.FEATURE_POJO_MAPPING, "true"));
+
+                bind(RtestConfig.class).toInstance(RtestConfig.get());
+
+                JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider();
+                jacksonJsonProvider.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                bind(JacksonJsonProvider.class).toInstance(jacksonJsonProvider);
 
                 bind(WalletService.class).in(Scopes.SINGLETON);
                 bind(TransferService.class).in(Scopes.SINGLETON);
@@ -48,9 +56,11 @@ public class Rtest {
 
                 bind(Dummy.class).in(Scopes.SINGLETON);
             }
-        }).getInstance(Dummy.class).test();
+        });
 
-        Server server = new Server(PORT);
+        injector.getInstance(Dummy.class).test();
+
+        Server server = new Server(injector.getInstance(RtestConfig.class).port);
         ServletContextHandler handler = new ServletContextHandler(server, "/");
         handler.addFilter(GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
         server.start();
@@ -74,15 +84,15 @@ public class Rtest {
 
             transferService.put("1", "merlin:gbp", "alice:gbp", "GBP", BigDecimal.ONE);
             transferService.put("2", "merlin:gbp", "bob:sos", "GBP", BigDecimal.ONE);
-            transferService.put("3", "merlin:gbp", "bob:sos", "SOS", new BigDecimal("745.404"));
+            transferService.put("3", "merlin:gbp", "bob:sos", "SOS", BigDecimal.ONE);
 
             transferService.execute("1");
             transferService.execute("2");
             transferService.execute("3");
 
-            LOG.info("Merlin GBP balance: " + walletService.get("merlin:gbp").balance + " (expecting 7)");
+            LOG.info("Merlin GBP balance: " + walletService.get("merlin:gbp").balance + " (expecting almost 8)");
             LOG.info("Alice GBP balance: " + walletService.get("alice:gbp").balance + " (expecting 1)");
-            LOG.info("Bob SOS balance: " + walletService.get("bob:sos").balance + " (expecting 1490.808)");
+            LOG.info("Bob SOS balance: " + walletService.get("bob:sos").balance + " (expecting almost 740)");
         }
     }
 
