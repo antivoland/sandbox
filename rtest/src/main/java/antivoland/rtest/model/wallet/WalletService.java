@@ -32,7 +32,11 @@ public class WalletService {
     }
 
     public Wallet get(String id) throws WalletNotFoundException {
-        return walletStorage.get(id);
+        Wallet wallet = walletStorage.get(id);
+        if (wallet == null) {
+            throw new WalletNotFoundException(id);
+        }
+        return wallet;
     }
 
     public void withdraw(String id, String currency, BigDecimal amount) throws WalletNotFoundException, WalletHasInsufficientFundsException {

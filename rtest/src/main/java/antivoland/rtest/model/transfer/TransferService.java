@@ -25,7 +25,11 @@ public class TransferService {
     }
 
     public Transfer get(String id) throws TransferNotFoundException {
-        return transferStorage.get(id);
+        Transfer transfer = transferStorage.get(id);
+        if (transfer == null) {
+            throw new TransferNotFoundException(id);
+        }
+        return transfer;
     }
 
     public void execute(String id) throws TransferNotFoundException, WalletNotFoundException, WalletHasInsufficientFundsException {
