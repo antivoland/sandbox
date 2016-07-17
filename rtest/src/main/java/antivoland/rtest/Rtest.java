@@ -1,9 +1,10 @@
 package antivoland.rtest;
 
 import antivoland.rtest.api.dev.Transfers;
-import antivoland.rtest.api.dev.Users;
 import antivoland.rtest.api.dev.Wallets;
-import antivoland.rtest.model.*;
+import antivoland.rtest.model.Converter;
+import antivoland.rtest.model.TransferService;
+import antivoland.rtest.model.WalletService;
 import com.google.inject.Guice;
 import com.google.inject.Scopes;
 import com.google.inject.Stage;
@@ -17,53 +18,37 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
+import javax.inject.Inject;
 import javax.servlet.DispatcherType;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Rtest {
     private static final Logger LOG = LoggerFactory.getLogger(Rtest.class);
     private static final int PORT = 10111; // todo: move to config
-    private final static Map<String, User> users = new HashMap<>();
-    private final static Map<String, Wallet> wallets = new HashMap<>();
 
     public static void main(String[] args) throws Exception {
         // replace jersey logger with slf4j
         SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();
 
-        putUser("merlin", User.Gender.male);
-        putWallet("merlin", "gbp", BigDecimal.TEN);
-
-        putUser("alice", User.Gender.female);
-        putWallet("alice", "gbp", BigDecimal.ZERO);
-
-        putUser("bob", User.Gender.male);
-        putWallet("bob", "sos", BigDecimal.ZERO);
-
-        transfer(Wallet.id("merlin", "gbp"), Wallet.id("alice", "gbp"), BigDecimal.ONE);
-        transfer(Wallet.id("merlin", "gbp"), Wallet.id("bob", "sos"), BigDecimal.ONE);
-
-        LOG.info("Merlin GBP balance: " + wallets.get(Wallet.id("merlin", "gbp")).balance + " (expecting 8)");
-        LOG.info("Alice GBP balance: " + wallets.get(Wallet.id("alice", "gbp")).balance + " (expecting 1)");
-        LOG.info("Bob SOS balance: " + wallets.get(Wallet.id("bob", "sos")).balance + " (expecting 745.404)");
-
         Guice.createInjector(Stage.PRODUCTION, new ServletModule() {
             @Override
             protected void configureServlets() {
                 serve("/*").with(GuiceContainer.class, Collections.singletonMap(JSONConfiguration.FEATURE_POJO_MAPPING, "true"));
 
-                bind(Converter.class).in(Scopes.SINGLETON);
                 bind(WalletService.class).in(Scopes.SINGLETON);
+                bind(TransferService.class).in(Scopes.SINGLETON);
 
-                bind(Users.class).in(Scopes.SINGLETON);
+                bind(Converter.class).to(DummyConverter.class);
+
                 bind(Wallets.class).in(Scopes.SINGLETON);
                 bind(Transfers.class).in(Scopes.SINGLETON);
+
+                bind(Dummy.class).in(Scopes.SINGLETON);
             }
-        });
+        }).getInstance(Dummy.class).test();
 
         Server server = new Server(PORT);
         ServletContextHandler handler = new ServletContextHandler(server, "/");
@@ -72,40 +57,45 @@ public class Rtest {
         server.join();
     }
 
-    private static void putUser(String id, User.Gender gender) {
-        User user = new User(id, gender);
-        users.put(user.id, user);
-    }
+    public static class Dummy {
+        private final WalletService walletService;
+        private final TransferService transferService;
 
-    private static void putWallet(String userId, String currency, BigDecimal balance) {
-        Wallet wallet = new Wallet(userId, currency, balance);
-        wallets.put(wallet.id, wallet);
-    }
-
-    private static Transfer transfer(String fromId, String toId, BigDecimal amount) throws TransferException {
-        Wallet from = wallets.get(fromId);
-        if (from.balance.subtract(amount).compareTo(BigDecimal.ZERO) < 0) {
-            throw new TransferException("Not enough funds");
+        @Inject
+        public Dummy(WalletService walletService, TransferService transferService) {
+            this.walletService = walletService;
+            this.transferService = transferService;
         }
 
-        Wallet to = wallets.get(toId);
-        Transfer transfer = new Transfer(from, to, amount);
+        public void test() throws Exception {
+            walletService.put("merlin:gbp", "GBP", BigDecimal.TEN);
+            walletService.put("alice:gbp", "GBP", BigDecimal.ZERO);
+            walletService.put("bob:sos", "SOS", BigDecimal.ZERO);
 
-        from.balance = from.balance.subtract(amount);
-        if (from.currency.equals(to.currency)) {
-            to.balance = to.balance.add(amount);
-        } else {
-            to.balance = to.balance.add(convert(from.currency, to.currency, amount));
+            transferService.put("1", "merlin:gbp", "alice:gbp", "GBP", BigDecimal.ONE);
+            transferService.put("2", "merlin:gbp", "bob:sos", "GBP", BigDecimal.ONE);
+            transferService.put("3", "merlin:gbp", "bob:sos", "SOS", new BigDecimal("745.404"));
+
+            transferService.execute("1");
+            transferService.execute("2");
+            transferService.execute("3");
+
+            LOG.info("Merlin GBP balance: " + walletService.get("merlin:gbp").balance + " (expecting 7)");
+            LOG.info("Alice GBP balance: " + walletService.get("alice:gbp").balance + " (expecting 1)");
+            LOG.info("Bob SOS balance: " + walletService.get("bob:sos").balance + " (expecting 1490.808)");
         }
-        transfer.complete(Transfer.Status.succeeded);
-        return transfer;
     }
 
-    private static BigDecimal convert(String from, String to, BigDecimal amount) {
-        if ("gbp".equals(from) && "sos".equals(to)) {
-            return amount.multiply(new BigDecimal("745.404"));
-        } else {
-            throw new UnsupportedOperationException("Not implemented yet");
+    public static class DummyConverter extends Converter {
+        @Override
+        protected BigDecimal rate(String from, String to) {
+            if ("GBP".equals(from) && "SOS".equals(to)) {
+                return new BigDecimal("745.404");
+            } else if ("SOS".equals(from) && "GBP".equals(to)) {
+                return new BigDecimal("0.00134155");
+            } else {
+                throw new UnsupportedOperationException("Not implemented yet");
+            }
         }
     }
 }

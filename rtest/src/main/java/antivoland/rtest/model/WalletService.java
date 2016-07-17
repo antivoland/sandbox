@@ -1,14 +1,20 @@
 package antivoland.rtest.model;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
 public class WalletService {
+    private static final Logger LOG = LoggerFactory.getLogger(WalletService.class);
+    private static final String WITHDRAW = "Withdrawing %s %S from '%s'";
+    private static final String CHARGE = "Charging %s %S to '%s'";
     private static final BigDecimal CONVERSION_FEE = BigDecimal.ZERO; // todo: move to config and replace with non-zero value
-    private static final Map<String, Wallet> wallets = new HashMap<>();
 
+    private final Map<String, Wallet> wallets = new HashMap<>();
     private final Converter converter;
 
     @Inject
@@ -16,24 +22,24 @@ public class WalletService {
         this.converter = converter;
     }
 
-    public void put(String userId, String currency, BigDecimal balance) throws WalletAlreadyExistsException {
-        String walletId = Wallet.id(userId, currency);
-        if (wallets.containsKey(walletId)) {
-            throw new WalletAlreadyExistsException(userId, currency);
+    public void put(String id, String currency, BigDecimal balance) throws WalletAlreadyExistsException {
+        if (wallets.containsKey(id)) {
+            throw new WalletAlreadyExistsException(id);
         }
-        wallets.put(walletId, new Wallet(userId, currency, balance));
+        wallets.put(id, new Wallet(id, currency, balance));
     }
 
-    public Wallet get(String userId, String currency) throws WalletNotFoundException {
-        Wallet wallet = wallets.get(Wallet.id(userId, currency));
+    public Wallet get(String id) throws WalletNotFoundException {
+        Wallet wallet = wallets.get(id);
         if (wallet == null) {
-            throw new WalletNotFoundException(userId, currency);
+            throw new WalletNotFoundException(id);
         }
         return wallet;
     }
 
-    private void withdraw(String userId, String currency, BigDecimal amount) throws WalletNotFoundException, WalletHasInsufficientFundsException {
-        Wallet wallet = get(userId, currency);
+    public void withdraw(String id, String currency, BigDecimal amount) throws WalletNotFoundException, WalletHasInsufficientFundsException {
+        LOG.info(String.format(WITHDRAW, amount, currency, id));
+        Wallet wallet = get(id);
         BigDecimal newBalance;
         if (wallet.currency.equals(currency)) {
             newBalance = wallet.balance.subtract(amount);
@@ -42,13 +48,14 @@ public class WalletService {
             newBalance = wallet.balance.subtract(converted);
         }
         if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
-            throw new WalletHasInsufficientFundsException(userId, currency);
+            throw new WalletHasInsufficientFundsException(wallet.id);
         }
         wallet.balance = newBalance;
     }
 
-    private void charge(String userId, String currency, BigDecimal amount) throws WalletNotFoundException {
-        Wallet wallet = get(userId, currency);
+    public void charge(String id, String currency, BigDecimal amount) throws WalletNotFoundException {
+        LOG.info(String.format(CHARGE, amount, currency, id));
+        Wallet wallet = get(id);
         BigDecimal newBalance;
         if (wallet.currency.equals(currency)) {
             newBalance = wallet.balance.add(amount);

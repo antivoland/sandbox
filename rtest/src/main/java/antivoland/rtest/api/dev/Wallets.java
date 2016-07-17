@@ -12,7 +12,7 @@ import javax.ws.rs.core.MediaType;
 
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@Path(value = "/api/dev/users/{userId}/wallets")
+@Path(value = "/api/dev/wallets")
 public class Wallets {
     private final WalletService walletService;
 
@@ -22,21 +22,21 @@ public class Wallets {
     }
 
     @PUT
-    @Path("/{currency}")
-    public void put(@PathParam("userId") String userId, @PathParam("currency") String currency, WalletDetails details) throws WalletAlreadyExistsException {
-        walletService.put(userId, currency, details.balance);
+    @Path("/{id}")
+    public void put(@PathParam("id") String id, WalletDetails details) throws WalletAlreadyExistsException {
+        walletService.put(id, details.currency, details.balance);
     }
 
     @GET
-    @Path("/{currency}")
-    public WalletDetails get(@PathParam("userId") String userId, @PathParam("currency") String currency) throws WalletNotFoundException {
-        Wallet wallet = walletService.get(userId, currency);
-        return new WalletDetails(wallet.balance);
+    @Path("/{id}")
+    public WalletDetails get(@PathParam("id") String id) throws WalletNotFoundException {
+        Wallet wallet = walletService.get(id);
+        return new WalletDetails(wallet.currency, wallet.balance);
     }
 
     @DELETE
-    @Path("/{currency}")
-    public void delete(@PathParam("userId") String userId, @PathParam("currency") String currency) {
+    @Path("/{id}")
+    public void delete(@PathParam("id") String id) {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 }

@@ -5,9 +5,13 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import java.math.BigDecimal;
 
 public class WalletDetails {
+    public final String currency;
     public final BigDecimal balance;
 
-    public WalletDetails(@JsonProperty("balance") BigDecimal balance) {
+    public WalletDetails(
+            @JsonProperty("currency") String currency,
+            @JsonProperty("balance") BigDecimal balance) {
+        this.currency = currency;
         this.balance = balance;
     }
 }
