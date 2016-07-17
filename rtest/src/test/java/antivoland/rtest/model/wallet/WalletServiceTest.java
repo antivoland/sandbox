@@ -3,7 +3,6 @@ package antivoland.rtest.model.wallet;
 import antivoland.rtest.storage.WalletDummyStorage;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,12 +19,6 @@ public class WalletServiceTest {
     private static final int BOTTLES = 999;
 
     private final ExecutorService threadPool = Executors.newFixedThreadPool(BOTTLES);
-    private WalletService walletService;
-
-    @Before
-    public void setup() {
-        walletService = new WalletService(new WalletDummyStorage(), null, null);
-    }
 
     @After
     public void destroy() {
@@ -33,41 +26,42 @@ public class WalletServiceTest {
     }
 
     @Test
-    public void test() throws Exception {
+    public void testWalletDummyStorage() throws Exception {
+        testWalletStorage(new WalletDummyStorage(), "dummy");
+    }
+
+    private void testWalletStorage(WalletStorage walletStorage, String alias) throws Exception {
+        WalletService walletService = new WalletService(walletStorage, null, null);
         walletService.put(WALL, BOTTLE, BigDecimal.ZERO);
 
         CountDownLatch start = new CountDownLatch(1);
         CountDownLatch finish = new CountDownLatch(BOTTLES);
         for (int no = 1; no <= BOTTLES; ++no) {
-            threadPool.submit(staff(start, finish, no));
+            threadPool.submit(staff(start, finish, no, walletService));
         }
         start.countDown();
         finish.await();
 
-        Thread.sleep(1000);
-
         Wallet wall = walletService.get(WALL);
-        LOG.info(String.format("%s bottles of beer on the wall, %s bottles of beer", wall.balance, wall.balance));
+        LOG.info(String.format("%s bottles of beer on the %s wall, %s bottles of beer", wall.balance, alias, wall.balance));
         Assert.assertTrue(new BigDecimal(String.valueOf(BOTTLES)).compareTo(wall.balance) == 0);
         Assert.assertEquals(BOTTLES, wall.version);
 
         start = new CountDownLatch(1);
         finish = new CountDownLatch(BOTTLES);
         for (int no = 1; no <= BOTTLES; ++no) {
-            threadPool.submit(visitor(start, finish, no));
+            threadPool.submit(visitor(start, finish, no, walletService));
         }
         start.countDown();
         finish.await();
 
-        Thread.sleep(1000);
-
         wall = walletService.get(WALL);
-        LOG.info(String.format("Take %s down, pass them around, %s bottles of beer on the wall...", BOTTLES, wall.balance));
+        LOG.info(String.format("Take %s down, pass them around, %s bottles of beer on the %s wall...", BOTTLES, wall.balance, alias));
         Assert.assertTrue(BigDecimal.ZERO.compareTo(wall.balance) == 0);
         Assert.assertEquals(BOTTLES * 2, wall.version);
     }
 
-    private Runnable staff(CountDownLatch start, CountDownLatch finish, int no) {
+    private Runnable staff(CountDownLatch start, CountDownLatch finish, int no, WalletService walletService) {
         return () -> {
             try {
                 start.await();
@@ -81,7 +75,7 @@ public class WalletServiceTest {
         };
     }
 
-    private Runnable visitor(CountDownLatch start, CountDownLatch finish, int no) {
+    private Runnable visitor(CountDownLatch start, CountDownLatch finish, int no, WalletService walletService) {
         return () -> {
             try {
                 start.await();
