@@ -14,7 +14,7 @@ import javax.ws.rs.core.Response;
 
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@Path(value = "/api/dev/wallets")
+@Path(value = "/api/dev/wallets/{id}")
 public class Wallets {
     private final WalletService walletService;
 
@@ -24,7 +24,6 @@ public class Wallets {
     }
 
     @PUT
-    @Path("/{id}")
     public void put(@PathParam("id") String id, WalletDetails details) {
         try {
             walletService.put(id, details.currency, details.balance);
@@ -34,7 +33,6 @@ public class Wallets {
     }
 
     @GET
-    @Path("/{id}")
     public WalletDetails get(@PathParam("id") String id) {
         Wallet wallet;
         try {

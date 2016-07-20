@@ -16,7 +16,7 @@ import javax.ws.rs.core.Response;
 
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@Path(value = "/api/dev/transfers")
+@Path(value = "/api/dev/transfers/{id}")
 public class Transfers {
     private final TransferService transferService;
 
@@ -26,7 +26,6 @@ public class Transfers {
     }
 
     @PUT
-    @Path("/{id}")
     public void put(@PathParam("id") String id, TransferDetails details) {
         try {
             transferService.put(id, details.from, details.to, details.currency, details.amount);
@@ -45,7 +44,6 @@ public class Transfers {
     }
 
     @GET
-    @Path("/{id}")
     public TransferDetails get(@PathParam("id") String id) {
         Transfer transfer;
         try {
