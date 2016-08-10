@@ -1,1 +1,1 @@
-logLevel := Level.Info
+logLevel := Level.Warn

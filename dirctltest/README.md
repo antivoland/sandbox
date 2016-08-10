@@ -15,3 +15,7 @@
 ```scala
 def spyOnThePerson(identificator:String, coordinates:(Double,Double), R:Int, timeOutM:Int, callback: () => String)
 ```
+
+## Решение
+
+Настало время почитать: [Scala в примерах](https://ru.wikibooks.org/wiki/Scala_%D0%B2_%D0%BF%D1%80%D0%B8%D0%BC%D0%B5%D1%80%D0%B0%D1%85)#Стандартные классы
