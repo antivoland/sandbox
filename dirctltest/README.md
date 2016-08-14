@@ -22,3 +22,4 @@ def spyOnThePerson(identificator:String, coordinates:(Double,Double), R:Int, tim
 
 - [Scala в примерах](https://ru.wikibooks.org/wiki/Scala_в_примерах)
 - [Scala Documentation](http://doc.akka.io/docs/akka/2.4/scala.html)#Introduction
+- [The Reactive Manifesto](http://www.reactivemanifesto.org) and its [Glossary](http://www.reactivemanifesto.org/glossary)
