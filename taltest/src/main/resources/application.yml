@@ -1,0 +1,7 @@
+log.directory: ${user.dir}/log
+
+# SPRING LOG
+logging:
+  file: ${log.directory}/spring.log
+  level.org.springframework: WARN
+  level.antivoland.taltest: DEBUG
