@@ -22,3 +22,4 @@ taltest/.idea
 taltest/*.iml
 taltest/target
 taltest/log
+taltest/src/main/resources/static/vis
