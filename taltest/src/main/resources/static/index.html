@@ -80,39 +80,42 @@
 
     <link href="vis.min.css" rel="stylesheet" type="text/css"/>
     <script type="text/javascript" src="vis.min.js"></script>
-    <script type="text/javascript" src="jquery-3.1.0.slim.min.js"></script>
+    <script type="text/javascript" src="jquery-3.1.1.min.js"></script>
 
     <script type="text/javascript">
         var network;
 
         function draw() {
-            var nodes = new vis.DataSet([
-                {id: "fry", label: "Fry"},
-                {id: "leela", label: "Leela"},
-                {id: "bender", label: "Bender"},
-                {id: "amy", label: "Amy"},
-                {id: "hermes", label: "Hermes"},
-                {id: "professor", label: "Professor"},
-                {id: "zoidberg", label: "Zoidberg"},
-                {id: "scruffy", label: "Scruffy"}
-            ]);
+            var nodes = null;
+            $.ajax({
+                url: "api/dev/employees",
+                async: false,
+                dataType: 'json',
+                success: function (employees) {
+                    nodes = $.map(employees, function (employee) {
+                        return {id: employee.id, label: employee.name};
+                    });
+                }
+            });
 
-            var edges = new vis.DataSet([
-                {from: "professor", to: "fry", arrows: 'to'},
-                {from: "professor", to: "leela", arrows: 'to'},
-                {from: "professor", to: "bender", arrows: 'to'},
-                {from: "professor", to: "amy", arrows: 'to'},
-                {from: "professor", to: "hermes", arrows: 'to'},
-                {from: "professor", to: "zoidberg", arrows: 'to'},
-                {from: "professor", to: "scruffy", arrows: 'to'},
-                {from: "leela", to: "fry", arrows: 'to'},
-                {from: "leela", to: "bender", arrows: 'to'}
-            ]);
+            var edges = [];
+            $.ajax({
+                url: "api/dev/managers",
+                async: false,
+                dataType: 'json',
+                success: function (managers) {
+                    edges = $.map(managers, function (employeeIds, managerId) {
+                        return $.map(employeeIds, function (employeeId) {
+                            return {from: managerId, to: employeeId, arrows: 'to'};
+                        });
+                    });
+                }
+            });
 
             var container = document.getElementById('employees');
             var data = {
-                nodes: nodes,
-                edges: edges
+                nodes: new vis.DataSet(nodes),
+                edges: new vis.DataSet(edges)
             };
             var options = {
                 edges: {
@@ -134,22 +137,30 @@
                 },
                 manipulation: {
                     addNode: function (data, callback) {
-                        // filling in the popup DOM elements
-                        document.getElementById('operation').innerHTML = "Add Node";
-                        document.getElementById('node-id').value = data.id;
-                        document.getElementById('node-label').value = data.label;
-                        document.getElementById('saveButton').onclick = saveData.bind(this, data, callback);
-                        document.getElementById('cancelButton').onclick = clearPopUp.bind();
-                        document.getElementById('nodeSettingsBox').style.display = 'block';
+                        $('#operation').text("Add Node");
+                        $('#node-id').val(data.id);
+                        $('#node-id').prop("disabled", false);
+                        $('#node-label').val(data.label);
+                        $('#saveButton').on("click", function () {
+                            saveData(data, callback);
+                        });
+                        $('#cancelButton').on("click", function () {
+                            clearPopUp();
+                        });
+                        $('#nodeSettingsBox').show();
                     },
                     editNode: function (data, callback) {
-                        // filling in the popup DOM elements
-                        document.getElementById('operation').innerHTML = "Edit Node";
-                        document.getElementById('node-id').value = data.id;
-                        document.getElementById('node-label').value = data.label;
-                        document.getElementById('saveButton').onclick = saveData.bind(this, data, callback);
-                        document.getElementById('cancelButton').onclick = cancelEdit.bind(this, callback);
-                        document.getElementById('nodeSettingsBox').style.display = 'block';
+                        $('#operation').text("Edit Node");
+                        $('#node-id').val(data.id);
+                        $('#node-id').prop("disabled", true);
+                        $('#node-label').val(data.label);
+                        $('#saveButton').on("click", function () {
+                            saveData(data, callback);
+                        });
+                        $('#cancelButton').on("click", function(){
+                            cancelEdit(callback);
+                        });
+                        $('#nodeSettingsBox').show();
                     },
                     addEdge: function (data, callback) {
                         if (data.from == data.to) {
@@ -164,9 +175,9 @@
         }
 
         function clearPopUp() {
-            document.getElementById('saveButton').onclick = null;
-            document.getElementById('cancelButton').onclick = null;
-            document.getElementById('nodeSettingsBox').style.display = 'none';
+            $('#saveButton').off("click");
+            $('#cancelButton').off("click");
+            $('#nodeSettingsBox').hide();
         }
 
         function cancelEdit(callback) {
@@ -175,8 +186,8 @@
         }
 
         function saveData(data, callback) {
-            data.id = document.getElementById('node-id').value;
-            data.label = document.getElementById('node-label').value;
+            data.id = $('#node-id').val();
+            data.label = $('#node-label').val();
             clearPopUp();
             callback(data);
         }
