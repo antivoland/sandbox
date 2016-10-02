@@ -38,4 +38,15 @@ public class IntersectionTest {
         int[] intersection = Intersection.intersection(a, b);
         Assert.assertArrayEquals(expected, intersection);
     }
+
+    @Test
+    public void testIndexOfClosestGreaterOrEqual() {
+        int[] values = new int[]{1, 1, 2, 3, 5, 8, 13};
+        Assert.assertEquals(3, Intersection.indexOfClosestGreaterOrEqual(values, 0, 3));
+        Assert.assertEquals(7, Intersection.indexOfClosestGreaterOrEqual(values, 0, 21));
+        Assert.assertEquals(7, Intersection.indexOfClosestGreaterOrEqual(values, 3, 2));
+        Assert.assertEquals(7, Intersection.indexOfClosestGreaterOrEqual(values, 4, 1));
+        Assert.assertEquals(4, Intersection.indexOfClosestGreaterOrEqual(values, 0, 4));
+        Assert.assertEquals(7, Intersection.indexOfClosestGreaterOrEqual(values, 0, 0));
+    }
 }
