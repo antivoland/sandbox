@@ -15,6 +15,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/api/dev/employees", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -31,9 +33,9 @@ public class Employees {
     RelationService relationService;
 
     @RequestMapping(method = RequestMethod.GET)
-    public List<Employee> list() {
+    public Map<String, EmployeeDetails> list() {
         LOG.debug(LIST);
-        return employeeService.list();
+        return employeeService.list().stream().collect(Collectors.toMap(e -> e.id, e -> new EmployeeDetails(e.name)));
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "{id}")

@@ -88,8 +88,8 @@
         var api = api("dev", $);
 
         function draw() {
-            var nodes = $.map(api.employees.list(), function (employee) {
-                return {id: employee.id, label: employee.name};
+            var nodes = $.map(api.employees.list(), function (employeeDetails, employeeId) {
+                return {id: employeeId, label: employeeDetails.name};
             });
 
             var edges = $.map(api.managers.list(), function (employeeIds, managerId) {
