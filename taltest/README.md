@@ -26,3 +26,30 @@ As a user I would like to have another visual structure with the same employees,
 2. Working solution should be presented on local machine.
 3. Publish code in Github or BitBucket and share link.
 4. (Optional) Deploy solution in free cloud to demo (Amazon AWS , Azure)
+
+## Solution
+
+The first section of our API will be about employees management:
+
+- method `GET /api/dev/employees` lists all employees
+- method `PUT /api/dev/employees/{id}` creates employee and specify his properties
+- method `POST /api/dev/employees/{id}` allows us to update employee's properties
+- method `DELETE /api/dev/employees/{id}` removes employee
+
+No let's define some endpoints to handle manager-to-employee relations:
+
+- method `GET /api/dev/managers` lists all managers
+- method `PUT /api/dev/managers/{id}/employees/{employeeId}` allows us to make a relation between manager and employee
+- method `DELETE /api/dev/managers/{id}/employees/{employeeId}` removes relation between manager and employee
+
+To start just run maven goal:
+
+```
+mvn spring-boot run
+```
+
+Now check out the tool for visual editing at `localhost:11177`. You should see something like this:
+
+![Futurama Graph](graph.png)
+
+Try to press `Edit` and perform some actions.
