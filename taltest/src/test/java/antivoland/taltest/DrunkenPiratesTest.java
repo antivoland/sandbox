@@ -54,6 +54,7 @@ public class DrunkenPiratesTest {
     @Test
     public void test() throws Exception {
         addSailor(CAPTAIN, CAPTAIN);
+        Assert.assertEquals(0, captainPeople());
 
         CountDownLatch start = new CountDownLatch(1);
         CountDownLatch finish = new CountDownLatch(SAILORS);
@@ -66,6 +67,7 @@ public class DrunkenPiratesTest {
         LOG.info("What'll we do with a {} drunken sailors,", SAILORS);
         Assert.assertEquals(SAILORS + 1, crewSize());
         LOG.info("Early in the morning.");
+        Assert.assertEquals(SAILORS, captainPeople());
 
         start = new CountDownLatch(1);
         finish = new CountDownLatch(SAILORS);
@@ -78,6 +80,10 @@ public class DrunkenPiratesTest {
         LOG.info("Stuff {} sailors in a sacks and throw them over,", SAILORS);
         Assert.assertEquals(1, crewSize());
         LOG.info("Early in the morning.");
+        Assert.assertEquals(0, captainPeople());
+
+        removeSailor(CAPTAIN);
+        Assert.assertEquals(0, crewSize());
     }
 
     private Runnable takeOnBoard(CountDownLatch start, CountDownLatch finish, int no) {
@@ -118,16 +124,6 @@ public class DrunkenPiratesTest {
         removeSailor(sailorId(sailorNo));
     }
 
-    private int crewSize() throws Exception {
-        MockHttpServletRequestBuilder request = get("/api/dev/employees");
-        String response = employeesMock.perform(request)
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andReturn().getResponse().getContentAsString();
-        Map<String, EmployeeDetails> employees = MAPPER.readValue(response, MAPPER.getTypeFactory().constructMapType(Map.class, String.class, EmployeeDetails.class));
-        return (int) employees.keySet().stream().filter(k -> k.startsWith(SAILOR_PREFIX) || k.equals(CAPTAIN)).count();
-    }
-
     private void addSailor(String id, String name) throws Exception {
         MockHttpServletRequestBuilder request = put("/api/dev/employees/" + id)
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -147,5 +143,25 @@ public class DrunkenPiratesTest {
 
     private static String sailorId(int no) {
         return SAILOR_PREFIX + no;
+    }
+
+    private int crewSize() throws Exception {
+        MockHttpServletRequestBuilder request = get("/api/dev/employees");
+        String response = employeesMock.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andReturn().getResponse().getContentAsString();
+        Map<String, EmployeeDetails> employees = MAPPER.readValue(response, MAPPER.getTypeFactory().constructMapType(Map.class, String.class, EmployeeDetails.class));
+        return (int) employees.keySet().stream().filter(k -> k.startsWith(SAILOR_PREFIX) || k.equals(CAPTAIN)).count();
+    }
+
+    private int captainPeople() throws Exception {
+        MockHttpServletRequestBuilder request = get("/api/dev/managers");
+        String response = managersMock.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andReturn().getResponse().getContentAsString();
+        Map<String, String[]> managers = MAPPER.readValue(response, MAPPER.getTypeFactory().constructMapType(Map.class, String.class, String[].class));
+        return managers.containsKey(CAPTAIN) ? managers.get(CAPTAIN).length : 0;
     }
 }
