@@ -15,7 +15,7 @@ As a user I would like to have such options in web application:
 3. Add into hierarchy new people with possibility to search existing employees in hierarchy and add under found employee newly added employee.
 4. Delete in hierarchy employee without breaking structure.
 
-**NB!!!** Additional challenge (optional)  
+**NB!!!** Additional challenge (optional)
 As a user I would like to have another visual structure with the same employees, but with possibility to show another details. “Who can sign important documents in hierarchy.”
 
 **PS!!!** Employee can have more than one manager and one person in structure won’t have top managers (CEO).
