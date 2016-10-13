@@ -185,6 +185,19 @@
                 }
             };
             network = new vis.Network(document.getElementById('employees'), data, options);
+            
+            $('#find-person').on('input', function() {
+                var prefix = $('#find-person').val().toLowerCase();
+                $.each(network.body.nodes, function(id, node) {
+                    var label = node.options.label.toLowerCase();
+                    if (prefix.length > 0 && label.startsWith(prefix)) {
+                        // todo: magic colors
+                        network.body.data.nodes.update([{id: id, color: {background: '#ffffff', highlight: {background: '#ffffff'}}}]);
+                    } else {
+                        network.body.data.nodes.update([{id: id, color: null}]);
+                    }
+                });
+            });
         }
 
         function clearPopUp() {
@@ -214,6 +227,11 @@
         <input type="button" value="save" id="saveButton"/>
         <input type="button" value="cancel" id="cancelButton"/>
     </div>
+</div>
+
+<div style="position: absolute; bottom: 10pt; left: 10pt">
+    <label for="find-person">Find person:</label>
+    <input id="find-person"/>
 </div>
 </body>
 </html>
