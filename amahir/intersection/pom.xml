@@ -5,7 +5,7 @@
 
     <parent>
         <groupId>antivoland.amahir</groupId>
-        <artifactId>parent</artifactId>
+        <artifactId>amahir</artifactId>
         <version>3</version>
     </parent>
 

@@ -5,7 +5,7 @@
 
     <parent>
         <groupId>antivoland.amahir</groupId>
-        <artifactId>parent</artifactId>
+        <artifactId>amahir</artifactId>
         <version>3</version>
     </parent>
 
@@ -14,6 +14,12 @@
     <packaging>jar</packaging>
 
     <dependencies>
+        <dependency>
+            <groupId>io.github.adrianulbona</groupId>
+            <artifactId>hmm</artifactId>
+            <version>0.1.0</version>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>antivoland.amahir</groupId>
-    <artifactId>parent</artifactId>
+    <artifactId>amahir</artifactId>
     <packaging>pom</packaging>
     <version>3</version>
 
