@@ -111,8 +111,6 @@ public class TranslitModel {
                                 .map(Emission::getState)
                                 .collect(Collectors.toList()))
                 );
-        return (key) -> {
-            return reachableStates.get(key);
-        };
+        return reachableStates::get;
     }
 }
