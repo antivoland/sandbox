@@ -3,7 +3,7 @@
 I work on Java, spend time on math, basketball and tango. The resources below can show you my code style:
 
 - HMM-based [names transliteration](amahir/translit)
-- application with possibility to visualize [employee structure hierarchy](taltest) and manage using web technologies (in progress)
+- application with possibility to visualize [employee structure hierarchy](taltest) and manage using web technologies
 - backing implementation of [money transfers](rtest) between multicurrency accounts
 - [microservice](oftest) tracking users and solving inverse geodesy problem
 - my comparsion of [SCRUM vs. KANBAN](symbiomark/README.md#scrum-vs-kanban) in russian
