@@ -8,98 +8,111 @@ import io.github.adrianulbona.hmm.probability.EmissionProbabilityCalculator;
 import io.github.adrianulbona.hmm.probability.ProbabilityCalculator;
 import io.github.adrianulbona.hmm.probability.StartProbabilityCalculator;
 import io.github.adrianulbona.hmm.probability.TransitionProbabilityCalculator;
+import io.github.adrianulbona.hmm.solver.MostProbableStateSequenceFinder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-public class TranslitModel extends Model<TranslitState, TranslitObservation> {
-    public TranslitModel(Map<String, Set<String>> dictionary, Map<String, Integer> wordFrequency) {
-        super(probabilityCalculator(dictionary, wordFrequency), reachableStatesFinder(dictionary));
+public class TranslitModel {
+    private final TranslitSequencer observationSequencer;
+    private final TranslitSequencer stateSequencer;
+    private final Model<TranslitState, TranslitObservation> model;
+
+    public TranslitModel(
+            List<Emission<TranslitState, TranslitObservation>> emissions,
+            Map<String, Integer> wordFrequency, TranslitSequencer stateSequencer, TranslitSequencer observationSequencer) {
+
+        this.observationSequencer = observationSequencer;
+        this.stateSequencer = stateSequencer;
+        this.model = new Model<>(
+                probabilityCalculator(emissions, wordFrequency),
+                reachableStatesFinder(emissions));
     }
 
-    private static ProbabilityCalculator<TranslitState, TranslitObservation> probabilityCalculator(Map<String, Set<String>> dictionary, Map<String, Integer> wordFrequency) {
+    public String translit(String word) {
+        List<TranslitObservation> observations = observationSequencer.allSequences(word).stream()
+                .map(TranslitObservation::new)
+                .collect(Collectors.toList());
+        List<TranslitState> states = new MostProbableStateSequenceFinder<>(model).basedOn(observations);
+        return String.join("", states.stream().map(s -> s.chars).collect(Collectors.toList()));
+    }
+
+    private ProbabilityCalculator<TranslitState, TranslitObservation> probabilityCalculator(
+            List<Emission<TranslitState, TranslitObservation>> emissions,
+            Map<String, Integer> wordFrequency) {
+
         return new ProbabilityCalculator<>(
-                startProbabilityCalculator(dictionary, wordFrequency),
-                emissionProbabilityCalculator(dictionary),
-                transitionProbabilityCalculator(dictionary, wordFrequency));
+                startProbabilityCalculator(wordFrequency),
+                emissionProbabilityCalculator(emissions),
+                transitionProbabilityCalculator(wordFrequency));
     }
 
-    public static List<TranslitObservation> parse(String word, Map<String, Set<String>> dictionary) {
-        return charSequences(word, dictionary).stream().map(e->new TranslitObservation(e)).collect(Collectors.toList());
+    private StartProbabilityCalculator<TranslitState> startProbabilityCalculator(
+            Map<String, Integer> wordFrequency) {
+
+        Map<String, Integer> startFrequency = wordFrequency.entrySet().stream()
+                .collect(Collectors.groupingBy(e -> stateSequencer.firstSequence(e.getKey()), Collectors.summingInt(Map.Entry::getValue)));
+        Integer total = startFrequency.values().stream()
+                .collect(Collectors.summingInt(e -> e));
+        Map<TranslitState, Double> startProbability = startFrequency.entrySet().stream()
+                .collect(Collectors.toMap(e -> new TranslitState(e.getKey()), e -> (double) e.getValue() / total));
+        return startProbability::get;
     }
 
-    private static ReachableStateFinder<TranslitState, TranslitObservation> reachableStatesFinder(Map<String, Set<String>> dictionary) {
-        Map<String, List<Emission<TranslitState, TranslitObservation>>> reversed = dictionary.entrySet().stream().flatMap(e -> e.getValue().stream()
-                .map(v -> new Emission<>(new TranslitState(e.getKey()), new TranslitObservation(v))))
-                .collect(Collectors.groupingBy(em -> em.getObservation().chars));
-        return observation -> {
-            return reversed.get(observation.chars).stream().map(e -> e.getState()).collect(Collectors.toList());
-        };
+    private EmissionProbabilityCalculator<TranslitState, TranslitObservation> emissionProbabilityCalculator(
+            List<Emission<TranslitState, TranslitObservation>> emissions) {
+
+        Map<TranslitState, Integer> stateFrequency = emissions.stream()
+                .collect(Collectors.groupingBy(Emission::getState, Collectors.summingInt(e -> 1)));
+        Integer total = stateFrequency.values().stream()
+                .collect(Collectors.summingInt(e -> e));
+        Map<Emission<TranslitState, TranslitObservation>, Double> emissionProbability = emissions.stream()
+                .collect(Collectors.toMap(e -> e, e -> (double) stateFrequency.get(e.getState()) / total));
+        return emissionProbability::get;
     }
 
-    private static EmissionProbabilityCalculator<TranslitState, TranslitObservation> emissionProbabilityCalculator(Map<String, Set<String>> dictionary) {
-        Map<String, List<Emission<TranslitState, TranslitObservation>>> reversed = dictionary.entrySet().stream().flatMap(e -> e.getValue().stream()
-                .map(v -> new Emission<>(new TranslitState(e.getKey()), new TranslitObservation(v))))
-                .collect(Collectors.groupingBy(em -> em.getObservation().chars));
+    private TransitionProbabilityCalculator<TranslitState> transitionProbabilityCalculator(
+            Map<String, Integer> wordFrequency) {
 
-
-        Map<Emission<TranslitState, TranslitObservation>, Double> emissionProbabilities = new HashMap<>();
-        for (List<Emission<TranslitState, TranslitObservation>> emissions : reversed.values()) {
-            for (Emission<TranslitState, TranslitObservation> emission : emissions) {
-                emissionProbabilities.put(emission, (double) 1 / emissions.size());
-            }
-        }
-        return emission -> emissionProbabilities.get(emission);
-    }
-
-    private static StartProbabilityCalculator<TranslitState> startProbabilityCalculator(Map<String, Set<String>> dictionary, Map<String, Integer> wordFrequency) {
-        Map<String, Integer> startFrequency = wordFrequency.entrySet().stream().collect(Collectors.groupingBy(e -> firstCharSequence(e.getKey(), dictionary), Collectors.summingInt(Map.Entry::getValue)));
-        Integer total = startFrequency.values().stream().collect(Collectors.summingInt(e -> e));
-        Map<String, Double> startProbability = startFrequency.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> (double) e.getValue() / total));
-        return state -> startProbability.get(state.chars);
-    }
-
-    private static TransitionProbabilityCalculator<TranslitState> transitionProbabilityCalculator(Map<String, Set<String>> dictionary, Map<String, Integer> wordFrequency) {
         Map<Transition<TranslitState>, Integer> transitionFrequency = wordFrequency.entrySet().stream()
-                .flatMap(e -> transitionFrequency(e.getKey(), e.getValue(), dictionary).entrySet().stream())
+                .flatMap(wf -> transitionFrequency(wf.getKey(), wf.getValue(), stateSequencer).entrySet().stream())
                 .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.summingInt(Map.Entry::getValue)));
-
-        Integer total = transitionFrequency.values().stream().collect(Collectors.summingInt(e -> e));
-        Map<Transition<TranslitState>, Double> transitionProbability = transitionFrequency.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> (double) e.getValue() / total));
-        return transition -> transitionProbability.get(transition);
+        Map<TranslitState, Integer> total = transitionFrequency.entrySet().stream()
+                .collect(Collectors.groupingBy(t -> t.getKey().getFrom(), Collectors.summingInt(Map.Entry::getValue)));
+        Map<Transition<TranslitState>, Double> transitionProbability = transitionFrequency.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, tf -> (double) tf.getValue() / total.get(tf.getKey().getFrom())));
+        return transitionProbability::get;
     }
 
-    public static Map<Transition<TranslitState>, Integer> transitionFrequency(String word, int wordFrequency, Map<String, Set<String>> dictionary) {
-        List<String> charSequences = charSequences(word, dictionary);
+    private Map<Transition<TranslitState>, Integer> transitionFrequency(
+            String word,
+            int wordFrequency,
+            TranslitSequencer sequencer) {
+
+        List<String> sequences = sequencer.allSequences(word);
         List<Transition<TranslitState>> transitions = new ArrayList<>();
-        for (int i = 1; i < charSequences.size(); ++i) {
-            transitions.add(new Transition<>(new TranslitState(charSequences.get(i - 1)), new TranslitState(charSequences.get(i))));
+        for (int i = 1; i < sequences.size(); ++i) {
+            TranslitState from = new TranslitState(sequences.get(i - 1));
+            TranslitState to = new TranslitState(sequences.get(i));
+            transitions.add(new Transition<>(from, to));
         }
-        return transitions.stream().collect(Collectors.toMap(t -> t, t -> 1)).entrySet().stream()
-                .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.summingInt(Map.Entry::getValue)))
-                .entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue() * wordFrequency));
+        return transitions.stream()
+                .collect(Collectors.groupingBy(t -> t, Collectors.summingInt(t -> wordFrequency)));
     }
 
-    public static String firstCharSequence(String word, Map<String, Set<String>> dictionary) {
-        return nextCharSequence(word, 0, dictionary);
-    }
+    private ReachableStateFinder<TranslitState, TranslitObservation> reachableStatesFinder(
+            List<Emission<TranslitState, TranslitObservation>> emissions) {
 
-    public static List<String> charSequences(String word, Map<String, Set<String>> dictionary) {
-        List<String> charSequences = new ArrayList<>();
-        int from = 0;
-        while (from <= word.length() - 1) {
-            String chars = nextCharSequence(word, from, dictionary);
-            charSequences.add(chars);
-            from += chars.length();
-        }
-        return charSequences;
-    }
-
-    private static String nextCharSequence(String word, int from, Map<String, Set<String>> dictionary) {
-        int to = from;
-        do {
-            ++to;
-        } while (to <= word.length() && dictionary.containsKey(word.substring(from, to)));
-        return from < to ? word.substring(from, to - 1) : null;
+        Map<TranslitObservation, List<TranslitState>> reachableStates = emissions.stream()
+                .collect(Collectors.groupingBy(Emission::getObservation)).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream()
+                                .map(Emission::getState)
+                                .collect(Collectors.toList()))
+                );
+        return (key) -> {
+            return reachableStates.get(key);
+        };
     }
 }
