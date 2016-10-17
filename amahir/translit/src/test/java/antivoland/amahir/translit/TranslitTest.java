@@ -34,6 +34,7 @@ public class TranslitTest {
         testEnRu("usfazan", model);
         testEnRu("pheognia", model);
         testEnRu("epiktet", model);
+        testEnRu("inessa", model);
     }
 
     private void testEnRu(String enName, TranslitModel model) throws Exception {
@@ -55,6 +56,7 @@ public class TranslitTest {
         testRuEn("усфазан", model);
         testRuEn("феогния", model);
         testRuEn("эпиктет", model);
+        testRuEn("инесса", model);
     }
 
     private void testRuEn(String ruName, TranslitModel model) throws Exception {
