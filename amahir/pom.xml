@@ -12,7 +12,7 @@
     <modules>
         <module>intersection</module>
         <module>bullshit</module>
-        <module>translit</module>
+        <module>translit/hmm</module>
     </modules>
 
     <properties>
