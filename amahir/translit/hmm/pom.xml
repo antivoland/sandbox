@@ -16,7 +16,6 @@
 
     <properties>
         <adrianulbona.hmm.version>0.1.0</adrianulbona.hmm.version>
-        <logback.version>1.1.7</logback.version>
     </properties>
 
     <dependencies>
@@ -29,12 +28,12 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
         </dependency>
 
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
