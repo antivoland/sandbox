@@ -35,6 +35,9 @@ public class HmmTranslitTest {
         testEnRu("pheognia", model);
         testEnRu("epiktet", model);
         testEnRu("inessa", model);
+        testEnRu("petrov", model);
+        testEnRu("petroff", model);
+        testEnRu("jurij", model);
     }
 
     private void testEnRu(String enName, HmmTranslitModel model) throws Exception {
@@ -57,6 +60,8 @@ public class HmmTranslitTest {
         testRuEn("феогния", model);
         testRuEn("эпиктет", model);
         testRuEn("инесса", model);
+        testRuEn("петров", model);
+        testRuEn("юрий", model);
     }
 
     private void testRuEn(String ruName, HmmTranslitModel model) throws Exception {
