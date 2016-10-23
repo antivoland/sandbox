@@ -1,4 +1,4 @@
-package antivoland.amahir.translit;
+package antivoland.amahir.translit.hmm;
 
 import io.github.adrianulbona.hmm.Emission;
 import org.junit.Test;
