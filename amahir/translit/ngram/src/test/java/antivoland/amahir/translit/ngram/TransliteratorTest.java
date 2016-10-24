@@ -72,7 +72,7 @@ public class TransliteratorTest {
 
     @Test
     public void testEnUnknown() {
-        LOG.info("Transliterating unknown russian names");
+        LOG.info("Transliterating unknown latin names");
         testTransliteration("avundiy", "авундий", laRuTransliterator);
         testTransliteration("plakilla", "плакилла", laRuTransliterator);
         testTransliteration("usfazan", "усфазан", laRuTransliterator);

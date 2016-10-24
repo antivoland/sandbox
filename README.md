@@ -2,7 +2,7 @@
 
 I work on Java, spend time on math, basketball and tango. The resources below can show you my code style:
 
-- names transliteration using [first order Hidden Markov Model](amahir/translit/hmm)
+- names transliteration using [first order Hidden Markov Model](amahir/translit/hmm) and [n-grams](amahir/translit/ngram)
 - application with possibility to visualize [employee structure hierarchy](taltest) and manage using web technologies
 - backing implementation of [money transfers](rtest) between multicurrency accounts
 - [microservice](oftest) tracking users and solving inverse geodesy problem
