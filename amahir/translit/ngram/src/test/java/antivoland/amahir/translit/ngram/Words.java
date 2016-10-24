@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 public class Words {
     private static final String RU_REGEX = "[а-яА-Я]+\\t[0-9]+";
     private static final String EN_REGEX = "[a-zA-Z']+\\t[0-9]+";
-    private static final String FILE_NAME = "names.stats.short";
+    private static final String FILE_NAME = "names.stats.medium";
 
 
     public static Map<String, Integer> ruWordFrequencies() throws Exception {

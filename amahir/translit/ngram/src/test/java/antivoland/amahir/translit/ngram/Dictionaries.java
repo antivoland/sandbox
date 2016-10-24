@@ -23,6 +23,6 @@ public class Dictionaries {
         return ruEn().entrySet().stream()
                 .flatMap(kv -> kv.getValue().stream().map(v -> new String[]{v, kv.getKey()}))
                 .collect(Collectors.groupingBy(kv -> kv[0], Collectors.toList())).entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().map(v -> v[1]).collect(Collectors.toList())));
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().map(kv -> kv[1]).collect(Collectors.toList())));
     }
 }
