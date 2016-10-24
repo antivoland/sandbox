@@ -27,9 +27,9 @@ public class SyllabifierTest {
     }
 
     @Test
-    public void testEn() throws Exception {
-        LOG.info("Syllabifying transliterated names");
-        Syllabifier enSyllabifier = Syllabifiers.en();
+    public void testLa() throws Exception {
+        LOG.info("Syllabifying latin names");
+        Syllabifier enSyllabifier = Syllabifiers.la();
         testForks("alexandr", enSyllabifier, 1);
         testForks("sergey", enSyllabifier, 1);
         testForks("elena", enSyllabifier, 1);

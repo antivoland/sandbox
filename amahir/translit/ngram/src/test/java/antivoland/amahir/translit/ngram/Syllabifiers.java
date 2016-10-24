@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 
-public class Syllabifiers {
+class Syllabifiers {
     private static final String FILE_NAME = "translit.txt";
 
     public static Syllabifier ru() throws Exception {
@@ -20,7 +20,7 @@ public class Syllabifiers {
         }
     }
 
-    public static Syllabifier en() throws Exception {
+    public static Syllabifier la() throws Exception {
         Path path = Paths.get(ClassLoader.getSystemResource(FILE_NAME).toURI());
         try (Stream<String> stream = Files.lines(path)) {
             return new Syllabifier(stream.map(l -> l.split("="))

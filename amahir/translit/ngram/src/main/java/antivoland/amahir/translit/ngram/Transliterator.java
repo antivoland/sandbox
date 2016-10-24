@@ -7,15 +7,44 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Transliterator {
-    private final Syllabifier inputSyllabifier;
-    private final Map<String, List<String>> inputOutputDictionary;
+    public class Transliteration {
+        public final List<String> input;
+        public final List<String> output;
+        public final Double inputProbability;
+        public final Double outputProbability;
+        public final Double bothProbability;
 
-    public Transliterator(Syllabifier inputSyllabifier, Map<String, List<String>> inputOutputDictionary) {
-        this.inputSyllabifier = inputSyllabifier;
-        this.inputOutputDictionary = inputOutputDictionary;
+        private Transliteration(List<String> input, List<String> output) {
+            this.input = input;
+            this.output = output;
+            this.inputProbability = inputCorpusForecaster.syllableSequenceProbability(input);
+            this.outputProbability = outputCorpusForecaster.syllableSequenceProbability(output);
+            this.bothProbability = this.inputProbability * this.outputProbability;
+        }
     }
 
-    public List<Transliteration> transliterate(String word) {
+    private final Syllabifier inputSyllabifier;
+    private final Map<String, List<String>> inputOutputDictionary;
+    private CorpusForecaster inputCorpusForecaster;
+    private CorpusForecaster outputCorpusForecaster;
+
+    public Transliterator(
+            Syllabifier inputSyllabifier,
+            Map<String, List<String>> inputOutputDictionary,
+            CorpusForecaster inputCorpusForecaster,
+            CorpusForecaster outputCorpusForecaster) {
+
+        this.inputSyllabifier = inputSyllabifier;
+        this.inputOutputDictionary = inputOutputDictionary;
+        this.inputCorpusForecaster = inputCorpusForecaster;
+        this.outputCorpusForecaster = outputCorpusForecaster;
+    }
+
+    public String transliterate(String word, ForecastStrategy forecastStrategy) {
+        return String.join("",transliterate(word).stream().max(forecastStrategy).get().output);
+    }
+
+    private List<Transliteration> transliterate(String word) {
         List<Transliteration> transliterations = new ArrayList<>();
         List<List<String>> inputs = inputSyllabifier.syllabify(word);
         for (List<String> input : inputs) {
