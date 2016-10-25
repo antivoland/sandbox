@@ -15,9 +15,7 @@ public class Ngram {
         if (o == null || getClass() != o.getClass()) return false;
 
         Ngram ngram = (Ngram) o;
-
         return syllables.equals(ngram.syllables);
-
     }
 
     @Override
