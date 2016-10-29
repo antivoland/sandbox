@@ -61,6 +61,6 @@ public class CorpusForecaster {
         }
         return ngrams.stream()
                 .collect(Collectors.groupingBy(ngram -> ngram, Collectors.summingDouble(ngram ->
-                        (double) wordFrequency.frequency / forks.size() / ngram.syllables.size())));
+                        wordFrequency.frequency / forks.size())));
     }
 }

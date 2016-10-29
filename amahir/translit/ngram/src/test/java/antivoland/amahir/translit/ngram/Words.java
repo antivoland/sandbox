@@ -9,6 +9,7 @@ class Words implements AutoCloseable {
     private static final String RU_REGEX = "[а-яА-Я]+\\t[0-9]+";
     private static final String EN_REGEX = "[a-zA-Z']+\\t[0-9]+";
     private static final String FILE_NAME = "names.stats.medium";
+    private static final int FREQUENCY_POWER = 3; // todo: нужна автоматическая подборка параметра
 
     public final Stream<WordFrequency> stream;
 
@@ -16,7 +17,7 @@ class Words implements AutoCloseable {
         Path path = Paths.get(ClassLoader.getSystemResource(fileName).toURI());
         this.stream = Files.lines(path)
                 .filter(l -> l.matches(regex)).map(l -> l.split("\t"))
-                .map(kv -> new WordFrequency(kv[0], Integer.valueOf(kv[1])));
+                .map(kv -> new WordFrequency(kv[0], Integer.valueOf(kv[1]), FREQUENCY_POWER));
     }
 
     @Override

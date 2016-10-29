@@ -2,10 +2,10 @@ package antivoland.amahir.translit.ngram;
 
 public class WordFrequency {
     public final String word;
-    public final int frequency;
+    public final double frequency;
 
-    public WordFrequency(String word, int frequency) {
+    public WordFrequency(String word, int frequency, int power) {
         this.word = word;
-        this.frequency = frequency;
+        this.frequency = Math.pow(frequency, power);
     }
 }

@@ -24,8 +24,18 @@ public class TransliteratorTest {
             ruCorpusForecaster = new CorpusForecaster(ruWords.stream, ruSyllabifier, N);
             laCorpusForecaster = new CorpusForecaster(laWords.stream, laSyllabifier, N);
         }
-        laRuTransliterator = new Transliterator(laSyllabifier, Dictionaries.laRu(), laCorpusForecaster, ruCorpusForecaster);
-        ruLaTransliterator = new Transliterator(ruSyllabifier, Dictionaries.ruLa(), ruCorpusForecaster, laCorpusForecaster);
+        laRuTransliterator = new Transliterator(
+                laSyllabifier,
+                Dictionaries.laRu(),
+                laCorpusForecaster,
+                ruCorpusForecaster,
+                true);
+        ruLaTransliterator = new Transliterator(
+                ruSyllabifier,
+                Dictionaries.ruLa(),
+                ruCorpusForecaster,
+                laCorpusForecaster,
+                false);
     }
 
     @Test
@@ -52,7 +62,7 @@ public class TransliteratorTest {
         testTransliteration("авундий", "avundiy", ruLaTransliterator);
         testTransliteration("плакилла", "plakilla", ruLaTransliterator);
         testTransliteration("усфазан", "usfazan", ruLaTransliterator);
-        testTransliteration("феогния", "pheognia", ruLaTransliterator);
+        testTransliteration("феогния", "feognia", ruLaTransliterator);
         testTransliteration("эпиктет", "epiktet", ruLaTransliterator);
     }
 
@@ -80,12 +90,12 @@ public class TransliteratorTest {
         testTransliteration("avundiy", "авундий", laRuTransliterator);
         testTransliteration("plakilla", "плакилла", laRuTransliterator);
         testTransliteration("usfazan", "усфазан", laRuTransliterator);
-        testTransliteration("pheognia", "феогния", laRuTransliterator);
+        testTransliteration("feognia", "феогния", laRuTransliterator);
         testTransliteration("epiktet", "эпиктет", laRuTransliterator);
     }
 
     public void testTransliteration(String name, String expected, Transliterator transliterator) {
-        String transliteration = transliterator.transliterate(name, ForecastStrategy.BOTH);
+        String transliteration = transliterator.transliterate(name, ForecastStrategy.OUTPUT); // todo: нужны веса для перемножения вероятностей
         int distance = LevenshteinDistance.computeLevenshteinDistance(transliteration, expected);
         LOG.info("{} -> {} ({}, {})", name, transliteration, expected, distance);
         Assert.assertTrue(distance <= MAX_DISTANCE);
