@@ -23,7 +23,7 @@ public class CorpusForecaster {
 
     public Double syllableSequenceProbability(List<String> syllables) {
         Double wordProbability = 1.0;
-        for (int i = 0; i < syllables.size(); ++i) {
+        for (int i = 1; i < syllables.size(); ++i) {
             Ngram ngram = new Ngram(syllables.subList(Math.max(0, i - N), i));
             Double ngramProbability = ngramProbabilities.get(ngram);
             wordProbability *= ngramProbability != null ? ngramProbability : 0; // todo: epsilon
@@ -35,7 +35,7 @@ public class CorpusForecaster {
         List<Ngram> ngrams = new ArrayList<>();
         List<List<String>> forks = syllabifier.syllabify(wordFrequency.word);
         for (List<String> fork : forks) {
-            for (int i = 0; i <= fork.size(); ++i) {
+            for (int i = 1; i <= fork.size(); ++i) {
                 ngrams.add(new Ngram(fork.subList(Math.max(0, i - N), i)));
             }
         }
