@@ -1,5 +1,8 @@
 package antivoland.amahir.translit.ngram;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -7,6 +10,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Transliterator {
+    private static final Logger LOG = LoggerFactory.getLogger(Transliterator.class);
+
     public class Transliteration {
         public final List<String> input;
         public final List<String> output;
@@ -41,7 +46,13 @@ public class Transliterator {
     }
 
     public String transliterate(String word, ForecastStrategy forecastStrategy) {
-        return String.join("",transliterate(word).stream().max(forecastStrategy).get().output);
+        List<Transliteration> transliterations = transliterate(word);
+        if (LOG.isDebugEnabled()) {
+            transliterations.stream()
+                    .sorted(forecastStrategy.reversed())
+                    .forEach(t -> LOG.debug("{} -> {} ({} = {} * {})", t.input, t.output, t.bothProbability, t.inputProbability, t.outputProbability));
+        }
+        return String.join("", transliterations.stream().max(forecastStrategy).get().output);
     }
 
     private List<Transliteration> transliterate(String word) {
