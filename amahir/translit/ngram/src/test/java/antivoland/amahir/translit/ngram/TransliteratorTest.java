@@ -18,8 +18,12 @@ public class TransliteratorTest {
     public void prepare() throws Exception {
         Syllabifier ruSyllabifier = Syllabifiers.ru();
         Syllabifier laSyllabifier = Syllabifiers.la();
-        CorpusForecaster ruCorpusForecaster = new CorpusForecaster(Words.ruWordFrequencies(), ruSyllabifier, N);
-        CorpusForecaster laCorpusForecaster = new CorpusForecaster(Words.laWordFrequencies(), laSyllabifier, N);
+        CorpusForecaster ruCorpusForecaster;
+        CorpusForecaster laCorpusForecaster;
+        try (Words ruWords = Words.ruWordFrequencies(); Words laWords = Words.laWordFrequencies()) {
+            ruCorpusForecaster = new CorpusForecaster(ruWords.stream, ruSyllabifier, N);
+            laCorpusForecaster = new CorpusForecaster(laWords.stream, laSyllabifier, N);
+        }
         laRuTransliterator = new Transliterator(laSyllabifier, Dictionaries.laRu(), laCorpusForecaster, ruCorpusForecaster);
         ruLaTransliterator = new Transliterator(ruSyllabifier, Dictionaries.ruLa(), ruCorpusForecaster, laCorpusForecaster);
     }
