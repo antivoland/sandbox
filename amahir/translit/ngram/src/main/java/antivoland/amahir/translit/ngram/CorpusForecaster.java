@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 public class CorpusForecaster {
     private final Map<Ngram, Double> ngramProbabilities;
     private final int N;
+    private final double epsilon;
 
     public CorpusForecaster(Stream<WordFrequency> wordFrequencies, Syllabifier syllabifier, int N) {
         Map<Ngram, Double> ngramFrequency = wordFrequencies
@@ -19,14 +20,25 @@ public class CorpusForecaster {
         this.ngramProbabilities = ngramFrequency.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, nf -> nf.getValue() / total));
         this.N = N;
+        this.epsilon = this.ngramProbabilities.values().stream().min(Double::compare).get();
     }
 
     public Double syllableSequenceProbability(List<String> syllables) {
         Double wordProbability = 1.0;
-        for (int i = 1; i < syllables.size(); ++i) {
-            Ngram ngram = new Ngram(syllables.subList(Math.max(0, i - N), i));
+        int m = 0;
+        while (m <= syllables.size()) {
+            Ngram ngram = new Ngram(Ngram.Align.MIDDLE, syllables.subList(Math.max(0, m - N), m));
             Double ngramProbability = ngramProbabilities.get(ngram);
-            wordProbability *= ngramProbability != null ? ngramProbability : 0; // todo: epsilon
+            wordProbability *= ngramProbability != null ? ngramProbability : epsilon;
+            ++m;
+        }
+
+        int r = Math.max(0, syllables.size() - N + 1);
+        while (r <= syllables.size()) {
+            Ngram ngram = new Ngram(Ngram.Align.RIGHT, syllables.subList(r, syllables.size()));
+            Double ngramProbability = ngramProbabilities.get(ngram);
+            wordProbability *= ngramProbability != null ? ngramProbability : epsilon;
+            ++r;
         }
         return wordProbability;
     }
@@ -35,8 +47,16 @@ public class CorpusForecaster {
         List<Ngram> ngrams = new ArrayList<>();
         List<List<String>> forks = syllabifier.syllabify(wordFrequency.word);
         for (List<String> fork : forks) {
-            for (int i = 1; i <= fork.size(); ++i) {
-                ngrams.add(new Ngram(fork.subList(Math.max(0, i - N), i)));
+            int m = 0;
+            while (m <= fork.size()) {
+                ngrams.add(new Ngram(Ngram.Align.MIDDLE, fork.subList(Math.max(0, m - N), m)));
+                ++m;
+            }
+
+            int r = Math.max(0, fork.size() - N + 1);
+            while (r <= fork.size()) {
+                ngrams.add(new Ngram(Ngram.Align.RIGHT, fork.subList(r, fork.size())));
+                ++r;
             }
         }
         return ngrams.stream()
