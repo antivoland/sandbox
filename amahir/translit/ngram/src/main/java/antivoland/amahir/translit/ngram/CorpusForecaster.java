@@ -25,7 +25,7 @@ public class CorpusForecaster {
 
     public Double syllableSequenceProbability(List<String> syllables) {
         Double wordProbability = 1.0;
-        int m = 0;
+        int m = 1;
         while (m <= syllables.size()) {
             Ngram ngram = new Ngram(Ngram.Align.MIDDLE, syllables.subList(Math.max(0, m - N), m));
             Double ngramProbability = ngramProbabilities.get(ngram);
@@ -34,7 +34,7 @@ public class CorpusForecaster {
         }
 
         int r = Math.max(0, syllables.size() - N + 1);
-        while (r <= syllables.size()) {
+        while (r < syllables.size()) {
             Ngram ngram = new Ngram(Ngram.Align.RIGHT, syllables.subList(r, syllables.size()));
             Double ngramProbability = ngramProbabilities.get(ngram);
             wordProbability *= ngramProbability != null ? ngramProbability : epsilon;
@@ -47,19 +47,20 @@ public class CorpusForecaster {
         List<Ngram> ngrams = new ArrayList<>();
         List<List<String>> forks = syllabifier.syllabify(wordFrequency.word);
         for (List<String> fork : forks) {
-            int m = 0;
+            int m = 1;
             while (m <= fork.size()) {
                 ngrams.add(new Ngram(Ngram.Align.MIDDLE, fork.subList(Math.max(0, m - N), m)));
                 ++m;
             }
 
             int r = Math.max(0, fork.size() - N + 1);
-            while (r <= fork.size()) {
+            while (r < fork.size()) {
                 ngrams.add(new Ngram(Ngram.Align.RIGHT, fork.subList(r, fork.size())));
                 ++r;
             }
         }
         return ngrams.stream()
-                .collect(Collectors.groupingBy(g -> g, Collectors.summingDouble(t -> (double) wordFrequency.frequency / forks.size())));
+                .collect(Collectors.groupingBy(ngram -> ngram, Collectors.summingDouble(ngram ->
+                        (double) wordFrequency.frequency / forks.size() / ngram.syllables.size())));
     }
 }
