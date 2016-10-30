@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -16,7 +15,7 @@ public class TransliteratorTest {
     private static final Logger LOG = LoggerFactory.getLogger(TransliteratorTest.class);
     private static final int N = 3;
     private static final double LAMBDA = 0.1;
-    private static final int MAX_DISTANCE = 3;
+    private static final int MAX_DISTANCE = 2;
 
     private static Transliterator ruLaTransliterator;
     private static Transliterator laRuTransliterator;
@@ -37,8 +36,7 @@ public class TransliteratorTest {
                 laCorpusForecaster,
                 ruCorpusForecaster,
                 true,
-                ValidationSets.laRuKnown(),
-                ValidationSets.laRuUnknown());
+                ValidationSets.laRuKnown());
         LOG.info("LA-RU: model -> {}", laRuTransliterator);
         ruLaTransliterator = createTransliterator(
                 ruSyllabifier,
@@ -46,8 +44,7 @@ public class TransliteratorTest {
                 ruCorpusForecaster,
                 laCorpusForecaster,
                 false,
-                ValidationSets.ruLaKnown(),
-                ValidationSets.ruLaUnknown());
+                ValidationSets.ruLaKnown());
         LOG.info("RU-LA: model -> {}", ruLaTransliterator);
     }
 
@@ -57,12 +54,7 @@ public class TransliteratorTest {
             CorpusForecaster inputCorpusForecaster,
             CorpusForecaster outputCorpusForecaster,
             boolean seekHiddenInputs,
-            Map<String, String> inputOuputKnown,
-            Map<String, String> inputOuputUnknown) {
-
-        Map<String, String> validationSet = new HashMap<>();
-        validationSet.putAll(inputOuputKnown);
-        validationSet.putAll(inputOuputUnknown);
+            Map<String, String> inputOuputKnown) {
 
         TreeMap<Double, Transliterator> transliterators = new TreeMap<>();
         double inputRate = 0;
@@ -76,7 +68,7 @@ public class TransliteratorTest {
                     forecastStrategy,
                     seekHiddenInputs);
 
-            List<Double> distances = validationSet.entrySet().stream()
+            List<Double> distances = inputOuputKnown.entrySet().stream()
                     .map(e -> {
                         String transliteration = transliterator.transliterate(e.getKey());
                         return (double) LevenshteinDistance.computeLevenshteinDistance(transliteration, e.getValue());
