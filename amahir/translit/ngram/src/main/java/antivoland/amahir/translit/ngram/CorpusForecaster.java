@@ -63,4 +63,12 @@ public class CorpusForecaster {
                 .collect(Collectors.groupingBy(ngram -> ngram, Collectors.summingDouble(ngram ->
                         wordFrequency.frequency / forks.size())));
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "N=" + N +
+                ", epsilon=" + epsilon +
+                '}';
+    }
 }

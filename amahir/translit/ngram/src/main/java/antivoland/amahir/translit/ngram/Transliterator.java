@@ -102,4 +102,13 @@ public class Transliterator {
         }
         return outputs;
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "outputCorpusForecaster=" + outputCorpusForecaster +
+                ", forecastStrategy=" + forecastStrategy +
+                ", seekHiddenInputs=" + seekHiddenInputs +
+                '}';
+    }
 }

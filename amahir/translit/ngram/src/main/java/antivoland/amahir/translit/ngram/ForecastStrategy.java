@@ -19,4 +19,12 @@ public class ForecastStrategy implements Comparator<Transliterator.Transliterati
     public int compare(Transliterator.Transliteration o1, Transliterator.Transliteration o2) {
         return Double.compare(o1.probability, o2.probability);
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "inputRate=" + inputRate +
+                ", outputRate=" + outputRate +
+                '}';
+    }
 }

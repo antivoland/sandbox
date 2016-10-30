@@ -1,21 +1,28 @@
 package antivoland.amahir.translit.ngram;
 
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
 public class TransliteratorTest {
     private static final Logger LOG = LoggerFactory.getLogger(TransliteratorTest.class);
     private static final int N = 3;
+    private static final double LAMBDA = 0.1;
     private static final int MAX_DISTANCE = 3;
 
-    private Transliterator ruLaTransliterator;
-    private Transliterator laRuTransliterator;
+    private static Transliterator ruLaTransliterator;
+    private static Transliterator laRuTransliterator;
 
-    @Before
-    public void prepare() throws Exception {
+    @BeforeClass
+    public static void prepare() throws Exception {
         Syllabifier ruSyllabifier = Syllabifiers.ru();
         Syllabifier laSyllabifier = Syllabifiers.la();
         CorpusForecaster ruCorpusForecaster;
@@ -24,20 +31,60 @@ public class TransliteratorTest {
             ruCorpusForecaster = new CorpusForecaster(ruWords.stream, ruSyllabifier, N);
             laCorpusForecaster = new CorpusForecaster(laWords.stream, laSyllabifier, N);
         }
-        laRuTransliterator = new Transliterator(
+        laRuTransliterator = createTransliterator(
                 laSyllabifier,
                 Dictionaries.laRu(),
                 laCorpusForecaster,
                 ruCorpusForecaster,
-                new ForecastStrategy(0.1, 0.9),
-                true);
-        ruLaTransliterator = new Transliterator(
+                true,
+                ValidationSets.laRuKnown(),
+                ValidationSets.laRuUnknown());
+        LOG.info("LA-RU: model -> {}", laRuTransliterator);
+        ruLaTransliterator = createTransliterator(
                 ruSyllabifier,
                 Dictionaries.ruLa(),
                 ruCorpusForecaster,
                 laCorpusForecaster,
-                new ForecastStrategy(0.5, 0.5),
-                false);
+                false,
+                ValidationSets.ruLaKnown(),
+                ValidationSets.ruLaUnknown());
+        LOG.info("RU-LA: model -> {}", ruLaTransliterator);
+    }
+
+    private static Transliterator createTransliterator(
+            Syllabifier inputSyllabifier,
+            Map<String, List<String>> inputOutputDictionary,
+            CorpusForecaster inputCorpusForecaster,
+            CorpusForecaster outputCorpusForecaster,
+            boolean seekHiddenInputs,
+            Map<String, String> inputOuputKnown,
+            Map<String, String> inputOuputUnknown) {
+
+        Map<String, String> validationSet = new HashMap<>();
+        validationSet.putAll(inputOuputKnown);
+        validationSet.putAll(inputOuputUnknown);
+
+        TreeMap<Double, Transliterator> transliterators = new TreeMap<>();
+        double inputRate = 0;
+        while (inputRate < 1) {
+            ForecastStrategy forecastStrategy = new ForecastStrategy(inputRate, 1 - inputRate);
+            Transliterator transliterator = new Transliterator(
+                    inputSyllabifier,
+                    inputOutputDictionary,
+                    inputCorpusForecaster,
+                    outputCorpusForecaster,
+                    forecastStrategy,
+                    seekHiddenInputs);
+
+            List<Integer> distances = validationSet.entrySet().stream()
+                    .map(e -> {
+                        String transliteration = transliterator.transliterate(e.getKey());
+                        return LevenshteinDistance.computeLevenshteinDistance(transliteration, e.getValue());
+                    }).collect(Collectors.toList());
+            transliterators.put((double) distances.stream().collect(Collectors.summingInt(d -> d)) / distances.size(), transliterator);
+            inputRate += LAMBDA;
+        }
+        return transliterators.firstEntry().getValue();
     }
 
     @Test
@@ -54,14 +101,14 @@ public class TransliteratorTest {
                 .forEach(e -> testLaRuTransliteration(e.getKey(), e.getValue()));
     }
 
-    //    @Test
+    @Test
     public void testRuLaKnown() throws Exception {
         LOG.info("Transliterating known russian names");
         ValidationSets.ruLaKnown().entrySet().stream()
                 .forEach(e -> testRuLaTransliteration(e.getKey(), e.getValue()));
     }
 
-    //    @Test
+    @Test
     public void testRuLaUnknown() throws Exception {
         LOG.info("Transliterating unknown russian names");
         ValidationSets.ruLaUnknown().entrySet().stream()
