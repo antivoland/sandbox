@@ -1,8 +1,5 @@
 package antivoland.amahir.translit.ngram;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -10,22 +7,19 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Transliterator {
-    private static final Logger LOG = LoggerFactory.getLogger(Transliterator.class);
     private static final String EMPTY_SYLLABLE = "";
 
     public class Transliteration {
         public final List<String> input;
         public final List<String> output;
-        public final Double inputProbability;
-        public final Double outputProbability;
-        public final Double bothProbability;
+        public final double probability;
 
         private Transliteration(List<String> input, List<String> output) {
             this.input = input;
             this.output = output;
-            this.inputProbability = inputCorpusForecaster.syllableSequenceProbability(input);
-            this.outputProbability = outputCorpusForecaster.syllableSequenceProbability(output);
-            this.bothProbability = this.inputProbability * this.outputProbability;
+            double inputProbability = inputCorpusForecaster.syllableSequenceProbability(input);
+            double outputProbability = outputCorpusForecaster.syllableSequenceProbability(output);
+            this.probability = forecastStrategy.probability(inputProbability, outputProbability);
         }
     }
 
@@ -33,6 +27,7 @@ public class Transliterator {
     private final Map<String, List<String>> inputOutputDictionary;
     private final CorpusForecaster inputCorpusForecaster;
     private final CorpusForecaster outputCorpusForecaster;
+    private final ForecastStrategy forecastStrategy;
     private final boolean seekHiddenInputs; // todo: для имени pelmen нужно будет задавать количество искомых скрытых симаолов
 
     public Transliterator(
@@ -40,26 +35,18 @@ public class Transliterator {
             Map<String, List<String>> inputOutputDictionary,
             CorpusForecaster inputCorpusForecaster,
             CorpusForecaster outputCorpusForecaster,
+            ForecastStrategy forecastStrategy,
             boolean seekHiddenInputs) {
 
         this.inputSyllabifier = inputSyllabifier;
         this.inputOutputDictionary = inputOutputDictionary;
         this.inputCorpusForecaster = inputCorpusForecaster;
         this.outputCorpusForecaster = outputCorpusForecaster;
+        this.forecastStrategy = forecastStrategy;
         this.seekHiddenInputs = seekHiddenInputs;
     }
 
-    public String transliterate(String word, ForecastStrategy forecastStrategy) {
-        List<Transliteration> transliterations = transliterate(word);
-        if (LOG.isDebugEnabled()) {
-            transliterations.stream()
-                    .sorted(forecastStrategy.reversed())
-                    .forEach(t -> LOG.debug("{} -> {} ({} = {} * {})", t.input, t.output, t.bothProbability, t.inputProbability, t.outputProbability));
-        }
-        return String.join("", transliterations.stream().max(forecastStrategy).get().output);
-    }
-
-    private List<Transliteration> transliterate(String word) {
+    public String transliterate(String word) {
         List<Transliteration> transliterations = new ArrayList<>();
         List<List<String>> inputs = inputSyllabifier.syllabify(word);
 
@@ -83,7 +70,7 @@ public class Transliterator {
                             .collect(Collectors.toList())
             );
         }
-        return transliterations;
+        return String.join("", transliterations.stream().max(forecastStrategy).get().output);
     }
 
     private List<List<String>> transliterate(List<String> input) {
