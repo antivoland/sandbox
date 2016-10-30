@@ -9,7 +9,7 @@ class Words implements AutoCloseable {
     private static final String RU_REGEX = "[а-яА-Я]+\\t[0-9]+";
     private static final String EN_REGEX = "[a-zA-Z']+\\t[0-9]+";
     private static final String FILE_NAME = "names.stats.medium";
-    private static final int FREQUENCY_POWER = 3; // todo: нужна автоматическая подборка параметра
+    private static final int FREQUENCY_POWER = 2; // todo: нужна автоматическая подборка параметра
 
     public final Stream<WordFrequency> stream;
 

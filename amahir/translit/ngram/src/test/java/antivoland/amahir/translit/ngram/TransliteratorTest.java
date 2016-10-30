@@ -76,12 +76,18 @@ public class TransliteratorTest {
                     forecastStrategy,
                     seekHiddenInputs);
 
-            List<Integer> distances = validationSet.entrySet().stream()
+            List<Double> distances = validationSet.entrySet().stream()
                     .map(e -> {
                         String transliteration = transliterator.transliterate(e.getKey());
-                        return LevenshteinDistance.computeLevenshteinDistance(transliteration, e.getValue());
+                        return (double) LevenshteinDistance.computeLevenshteinDistance(transliteration, e.getValue());
                     }).collect(Collectors.toList());
-            transliterators.put((double) distances.stream().collect(Collectors.summingInt(d -> d)) / distances.size(), transliterator);
+
+            double mean = distances.stream()
+                    .collect(Collectors.summingDouble(d -> d)) / distances.size();
+            double std = Math.sqrt(distances.stream()
+                    .collect(Collectors.summingDouble(d -> Math.pow(d - mean, 2))) / distances.size());
+
+            transliterators.put(std, transliterator);
             inputRate += LAMBDA;
         }
         return transliterators.firstEntry().getValue();
