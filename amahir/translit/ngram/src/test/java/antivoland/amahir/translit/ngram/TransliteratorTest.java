@@ -1,89 +1,129 @@
 package antivoland.amahir.translit.ngram;
 
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
 public class TransliteratorTest {
     private static final Logger LOG = LoggerFactory.getLogger(TransliteratorTest.class);
     private static final int N = 3;
-    private static final int MAX_DISTANCE = 3;
+    private static final double LAMBDA = 0.1;
+    private static final int MAX_DISTANCE = 2;
 
-    private Transliterator ruLaTransliterator;
-    private Transliterator laRuTransliterator;
+    private static Transliterator ruLaTransliterator;
+    private static Transliterator laRuTransliterator;
 
-    @Before
-    public void prepare() throws Exception {
+    @BeforeClass
+    public static void prepare() throws Exception {
         Syllabifier ruSyllabifier = Syllabifiers.ru();
         Syllabifier laSyllabifier = Syllabifiers.la();
-        CorpusForecaster ruCorpusForecaster = new CorpusForecaster(Words.ruWordFrequencies(), ruSyllabifier, N);
-        CorpusForecaster laCorpusForecaster = new CorpusForecaster(Words.laWordFrequencies(), laSyllabifier, N);
-        laRuTransliterator = new Transliterator(laSyllabifier, Dictionaries.laRu(), laCorpusForecaster, ruCorpusForecaster);
-        ruLaTransliterator = new Transliterator(ruSyllabifier, Dictionaries.ruLa(), ruCorpusForecaster, laCorpusForecaster);
+        CorpusForecaster ruCorpusForecaster;
+        CorpusForecaster laCorpusForecaster;
+        try (Words ruWords = Words.ruWordFrequencies(); Words laWords = Words.laWordFrequencies()) {
+            ruCorpusForecaster = new CorpusForecaster(ruWords.stream, ruSyllabifier, N);
+            laCorpusForecaster = new CorpusForecaster(laWords.stream, laSyllabifier, N);
+        }
+        laRuTransliterator = createTransliterator(
+                laSyllabifier,
+                Dictionaries.laRu(),
+                laCorpusForecaster,
+                ruCorpusForecaster,
+                true,
+                ValidationSets.laRuKnown());
+        LOG.info("LA-RU: model -> {}", laRuTransliterator);
+        ruLaTransliterator = createTransliterator(
+                ruSyllabifier,
+                Dictionaries.ruLa(),
+                ruCorpusForecaster,
+                laCorpusForecaster,
+                false,
+                ValidationSets.ruLaKnown());
+        LOG.info("RU-LA: model -> {}", ruLaTransliterator);
+    }
+
+    private static Transliterator createTransliterator(
+            Syllabifier inputSyllabifier,
+            Map<String, List<String>> inputOutputDictionary,
+            CorpusForecaster inputCorpusForecaster,
+            CorpusForecaster outputCorpusForecaster,
+            boolean seekHiddenInputs,
+            Map<String, String> inputOuputKnown) {
+
+        TreeMap<Double, Transliterator> transliterators = new TreeMap<>();
+        double inputRate = 0;
+        while (inputRate < 1) {
+            ForecastStrategy forecastStrategy = new ForecastStrategy(inputRate, 1 - inputRate);
+            Transliterator transliterator = new Transliterator(
+                    inputSyllabifier,
+                    inputOutputDictionary,
+                    inputCorpusForecaster,
+                    outputCorpusForecaster,
+                    forecastStrategy,
+                    seekHiddenInputs);
+
+            List<Double> distances = inputOuputKnown.entrySet().stream()
+                    .map(e -> {
+                        String transliteration = transliterator.transliterate(e.getKey());
+                        return (double) LevenshteinDistance.computeLevenshteinDistance(transliteration, e.getValue());
+                    }).collect(Collectors.toList());
+
+            double mean = distances.stream()
+                    .collect(Collectors.summingDouble(d -> d)) / distances.size();
+            double std = Math.sqrt(distances.stream()
+                    .collect(Collectors.summingDouble(d -> Math.pow(d - mean, 2))) / distances.size());
+
+            transliterators.put(std, transliterator);
+            inputRate += LAMBDA;
+        }
+        return transliterators.firstEntry().getValue();
     }
 
     @Test
-    public void testRuKnown() {
-        LOG.info("Transliterating known russian names");
-        testTransliteration("александр", "alexandr", ruLaTransliterator);
-        testTransliteration("сергей", "sergey", ruLaTransliterator);
-        testTransliteration("елена", "elena", ruLaTransliterator);
-        testTransliteration("андрей", "andrey", ruLaTransliterator);
-        testTransliteration("алексей", "alexey", ruLaTransliterator);
-        testTransliteration("ольга", "olga", ruLaTransliterator);
-        testTransliteration("дмитрий", "dmitrij", ruLaTransliterator);
-        testTransliteration("татьяна", "tatyana", ruLaTransliterator);
-        testTransliteration("ирина", "irina", ruLaTransliterator);
-        testTransliteration("инесса", "inessa", ruLaTransliterator);
-        testTransliteration("петров", "petrov", ruLaTransliterator);
-        testTransliteration("петров", "petroff", ruLaTransliterator);
-        testTransliteration("юрий", "jurij", ruLaTransliterator);
-    }
-
-    @Test
-    public void testRuUnknown() {
-        LOG.info("Transliterating unknown russian names");
-        testTransliteration("авундий", "avundiy", ruLaTransliterator);
-        testTransliteration("плакилла", "plakilla", ruLaTransliterator);
-        testTransliteration("усфазан", "usfazan", ruLaTransliterator);
-        testTransliteration("феогния", "pheognia", ruLaTransliterator);
-        testTransliteration("эпиктет", "epiktet", ruLaTransliterator);
-    }
-
-    @Test
-    public void testEnKnown() {
+    public void testLaRuKnown() throws Exception {
         LOG.info("Transliterating known latin names");
-        testTransliteration("alexandr", "александр", laRuTransliterator);
-        testTransliteration("sergey", "сергей", laRuTransliterator);
-        testTransliteration("elena", "елена", laRuTransliterator);
-        testTransliteration("andrey", "андрей", laRuTransliterator);
-        testTransliteration("alexey", "алексей", laRuTransliterator);
-        testTransliteration("olga", "ольга", laRuTransliterator);
-        testTransliteration("dmitrij", "дмитрий", laRuTransliterator);
-        testTransliteration("tatyana", "татьяна", laRuTransliterator);
-        testTransliteration("irina", "ирина", laRuTransliterator);
-        testTransliteration("inessa", "инесса", laRuTransliterator);
-        testTransliteration("petrov", "петров", laRuTransliterator);
-        testTransliteration("petroff", "петров", laRuTransliterator);
-        testTransliteration("jurij", "юрий", laRuTransliterator);
+        ValidationSets.laRuKnown().entrySet().stream()
+                .forEach(e -> testLaRuTransliteration(e.getKey(), e.getValue()));
     }
 
     @Test
-    public void testEnUnknown() {
+    public void testLaRuUnknown() throws Exception {
         LOG.info("Transliterating unknown latin names");
-        testTransliteration("avundiy", "авундий", laRuTransliterator);
-        testTransliteration("plakilla", "плакилла", laRuTransliterator);
-        testTransliteration("usfazan", "усфазан", laRuTransliterator);
-        testTransliteration("pheognia", "феогния", laRuTransliterator);
-        testTransliteration("epiktet", "эпиктет", laRuTransliterator);
+        ValidationSets.laRuUnknown().entrySet().stream()
+                .forEach(e -> testLaRuTransliteration(e.getKey(), e.getValue()));
     }
 
-    public void testTransliteration(String name, String expected, Transliterator transliterator) {
-        String transliteration = transliterator.transliterate(name, ForecastStrategy.BOTH);
+    @Test
+    public void testRuLaKnown() throws Exception {
+        LOG.info("Transliterating known russian names");
+        ValidationSets.ruLaKnown().entrySet().stream()
+                .forEach(e -> testRuLaTransliteration(e.getKey(), e.getValue()));
+    }
+
+    @Test
+    public void testRuLaUnknown() throws Exception {
+        LOG.info("Transliterating unknown russian names");
+        ValidationSets.ruLaUnknown().entrySet().stream()
+                .forEach(e -> testRuLaTransliteration(e.getKey(), e.getValue()));
+    }
+
+    public void testLaRuTransliteration(String name, String expected) {
+        String transliteration = laRuTransliterator.transliterate(name);
         int distance = LevenshteinDistance.computeLevenshteinDistance(transliteration, expected);
-        LOG.info("{} -> {} ({}, {})", name, transliteration, expected, distance);
+        LOG.info("LA-RU: {} -> {} ({}, {})", name, transliteration, expected, distance);
+        Assert.assertTrue(distance <= MAX_DISTANCE);
+    }
+
+    public void testRuLaTransliteration(String name, String expected) {
+        String transliteration = ruLaTransliterator.transliterate(name);
+        int distance = LevenshteinDistance.computeLevenshteinDistance(transliteration, expected);
+        LOG.info("RU-LA: {} -> {} ({}, {})", name, transliteration, expected, distance);
         Assert.assertTrue(distance <= MAX_DISTANCE);
     }
 

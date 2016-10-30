@@ -3,9 +3,13 @@ package antivoland.amahir.translit.ngram;
 import java.util.List;
 
 public class Ngram {
-    private final List<String> syllables;
+    public enum Align {MIDDLE, RIGHT}
 
-    public Ngram(List<String> syllables) {
+    public final Align align;
+    public final List<String> syllables;
+
+    public Ngram(Align align, List<String> syllables) {
+        this.align = align;
         this.syllables = syllables;
     }
 
@@ -15,11 +19,14 @@ public class Ngram {
         if (o == null || getClass() != o.getClass()) return false;
 
         Ngram ngram = (Ngram) o;
-        return syllables.equals(ngram.syllables);
+        return align == ngram.align && syllables.equals(ngram.syllables);
+
     }
 
     @Override
     public int hashCode() {
-        return syllables.hashCode();
+        int result = align.hashCode();
+        result = 31 * result + syllables.hashCode();
+        return result;
     }
 }
