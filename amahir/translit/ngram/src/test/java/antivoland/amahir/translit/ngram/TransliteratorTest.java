@@ -39,65 +39,44 @@ public class TransliteratorTest {
     }
 
     @Test
-    public void testRuKnown() {
+    public void testRuLaKnown() throws Exception {
         LOG.info("Transliterating known russian names");
-        testTransliteration("александр", "alexandr", ruLaTransliterator);
-        testTransliteration("сергей", "sergey", ruLaTransliterator);
-        testTransliteration("елена", "elena", ruLaTransliterator);
-        testTransliteration("андрей", "andrey", ruLaTransliterator);
-        testTransliteration("алексей", "alexey", ruLaTransliterator);
-        testTransliteration("ольга", "olga", ruLaTransliterator);
-        testTransliteration("дмитрий", "dmitrij", ruLaTransliterator);
-        testTransliteration("татьяна", "tatyana", ruLaTransliterator);
-        testTransliteration("ирина", "irina", ruLaTransliterator);
-        testTransliteration("инесса", "inessa", ruLaTransliterator);
-        testTransliteration("петров", "petrov", ruLaTransliterator);
-        testTransliteration("петров", "petroff", ruLaTransliterator);
-        testTransliteration("юрий", "jurij", ruLaTransliterator);
+        ValidationSets.ruLaKnown().entrySet().stream()
+                .forEach(e -> testRuLaTransliteration(e.getKey(), e.getValue()));
     }
 
     @Test
-    public void testRuUnknown() {
+    public void testRuLaUnknown() throws Exception {
         LOG.info("Transliterating unknown russian names");
-        testTransliteration("авундий", "avundiy", ruLaTransliterator);
-        testTransliteration("плакилла", "plakilla", ruLaTransliterator);
-        testTransliteration("усфазан", "usfazan", ruLaTransliterator);
-        testTransliteration("феогния", "feognia", ruLaTransliterator);
-        testTransliteration("эпиктет", "epiktet", ruLaTransliterator);
+        ValidationSets.ruLaUnknown().entrySet().stream()
+                .forEach(e -> testRuLaTransliteration(e.getKey(), e.getValue()));
     }
 
     @Test
-    public void testEnKnown() {
+    public void testLaRuKnown() throws Exception {
         LOG.info("Transliterating known latin names");
-        testTransliteration("alexandr", "александр", laRuTransliterator);
-        testTransliteration("sergey", "сергей", laRuTransliterator);
-        testTransliteration("elena", "елена", laRuTransliterator);
-        testTransliteration("andrey", "андрей", laRuTransliterator);
-        testTransliteration("alexey", "алексей", laRuTransliterator);
-        testTransliteration("olga", "ольга", laRuTransliterator);
-        testTransliteration("dmitrij", "дмитрий", laRuTransliterator);
-        testTransliteration("tatyana", "татьяна", laRuTransliterator);
-        testTransliteration("irina", "ирина", laRuTransliterator);
-        testTransliteration("inessa", "инесса", laRuTransliterator);
-        testTransliteration("petrov", "петров", laRuTransliterator);
-        testTransliteration("petroff", "петров", laRuTransliterator);
-        testTransliteration("jurij", "юрий", laRuTransliterator);
+        ValidationSets.laRuKnown().entrySet().stream()
+                .forEach(e -> testLaRuTransliteration(e.getKey(), e.getValue()));
     }
 
     @Test
-    public void testEnUnknown() {
+    public void testLaRuUnknown() throws Exception {
         LOG.info("Transliterating unknown latin names");
-        testTransliteration("avundiy", "авундий", laRuTransliterator);
-        testTransliteration("plakilla", "плакилла", laRuTransliterator);
-        testTransliteration("usfazan", "усфазан", laRuTransliterator);
-        testTransliteration("feognia", "феогния", laRuTransliterator);
-        testTransliteration("epiktet", "эпиктет", laRuTransliterator);
+        ValidationSets.laRuUnknown().entrySet().stream()
+                .forEach(e -> testLaRuTransliteration(e.getKey(), e.getValue()));
     }
 
-    public void testTransliteration(String name, String expected, Transliterator transliterator) {
-        String transliteration = transliterator.transliterate(name, ForecastStrategy.OUTPUT); // todo: нужны веса для перемножения вероятностей
+    public void testRuLaTransliteration(String name, String expected) {
+        String transliteration = ruLaTransliterator.transliterate(name, ForecastStrategy.BOTH); // todo: нужны веса для перемножения вероятностей
         int distance = LevenshteinDistance.computeLevenshteinDistance(transliteration, expected);
-        LOG.info("{} -> {} ({}, {})", name, transliteration, expected, distance);
+        LOG.info("RU-LA: {} -> {} ({}, {})", name, transliteration, expected, distance);
+        Assert.assertTrue(distance <= MAX_DISTANCE);
+    }
+
+    public void testLaRuTransliteration(String name, String expected) {
+        String transliteration = laRuTransliterator.transliterate(name, ForecastStrategy.OUTPUT); // todo: нужны веса для перемножения вероятностей
+        int distance = LevenshteinDistance.computeLevenshteinDistance(transliteration, expected);
+        LOG.info("LA-RU: {} -> {} ({}, {})", name, transliteration, expected, distance);
         Assert.assertTrue(distance <= MAX_DISTANCE);
     }
 
