@@ -14,8 +14,8 @@ import java.util.stream.Collectors;
 public class TransliteratorTest {
     private static final Logger LOG = LoggerFactory.getLogger(TransliteratorTest.class);
     private static final int N = 3;
-    private static final double LAMBDA = 0.1;
-    private static final int MAX_DISTANCE = 2;
+    private static final double ALPHA = 0.01;
+    private static final int MAX_DISTANCE = 3;
 
     private static Transliterator ruLaTransliterator;
     private static Transliterator laRuTransliterator;
@@ -80,7 +80,7 @@ public class TransliteratorTest {
                     .collect(Collectors.summingDouble(d -> Math.pow(d - mean, 2))) / distances.size());
 
             transliterators.put(std, transliterator);
-            inputRate += LAMBDA;
+            inputRate += ALPHA;
         }
         return transliterators.firstEntry().getValue();
     }
