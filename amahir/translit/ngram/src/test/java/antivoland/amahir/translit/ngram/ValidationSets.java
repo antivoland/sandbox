@@ -17,11 +17,11 @@ public class ValidationSets {
     }
 
     public static Map<String, String> laRuKnown() throws Exception {
-        return validationSet("validation/laru.known");
+        return ruLaKnown().entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
     }
 
     public static Map<String, String> laRuUnknown() throws Exception {
-        return validationSet("validation/laru.unknown");
+        return ruLaUnknown().entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
     }
 
     private static Map<String, String> validationSet(String fileName) throws Exception {

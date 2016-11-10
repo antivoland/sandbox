@@ -20,7 +20,7 @@ public class CorpusForecaster {
         this.ngramProbabilities = ngramFrequency.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, nf -> nf.getValue() / total));
         this.N = N;
-        this.epsilon = this.ngramProbabilities.values().stream().min(Double::compare).get();
+        this.epsilon = Math.pow(this.ngramProbabilities.values().stream().min(Double::compare).get(), 2);
     }
 
     public Double syllableSequenceProbability(List<String> syllables) {
