@@ -8,19 +8,21 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public class TransliteratorTest {
     private static final Logger LOG = LoggerFactory.getLogger(TransliteratorTest.class);
     private static final int N = 3;
     private static final double[] INPUT_RATE_RANGE = new double[]{0, 1};
-    private static final double INPUT_RATE_ALPHA = 0.5; // todo: 0.2
-    private static final double[] LENGTH_DIFF_RATE_RANGE = new double[]{-0.8, 1.2};
-    private static final double LENGTH_DIFF_RATE_ALPHA = 0.4; // todo: 0.2
+    private static final double INPUT_RATE_ALPHA = 1.1; // todo: 0.2
+    private static final double[] LENGTH_DIFF_RATE_RANGE = new double[]{0, 100};
+    private static final double LENGTH_DIFF_RATE_ALPHA = 100; // todo: 0.2
     private static final int MAX_DISTANCE = 30;
 
     private static Transliterator ruLaTransliterator;
@@ -41,7 +43,7 @@ public class TransliteratorTest {
                 Dictionaries.laRu(),
                 laCorpusForecaster,
                 ruCorpusForecaster,
-                true,
+                true, // todo: true
                 ValidationSets.laRuKnown(),
                 "laru.strategies");
         LOG.info("LA-RU: model -> {}", laRuTransliterator);
@@ -65,7 +67,7 @@ public class TransliteratorTest {
             Map<String, String> inputOutputKnown,
             String fileName) throws IOException {
 
-        StringBuilder sb = new StringBuilder();
+        StringBuilder octave = new StringBuilder();
         // todo: gradient descend?
         TreeMap<Double, Transliterator> transliterators = new TreeMap<>();
         double inputRate = INPUT_RATE_RANGE[0];
@@ -83,7 +85,7 @@ public class TransliteratorTest {
 
                 List<Double> distances = inputOutputKnown.entrySet().stream()
                         .map(e -> {
-                            String transliteration = transliterator.transliterate(e.getKey());
+                            String transliteration = transliterator.transliterate(e.getKey()).first().joinedOutput();
                             return (double) LevenshteinDistance.computeLevenshteinDistance(transliteration, e.getValue());
                         }).collect(Collectors.toList());
 
@@ -93,24 +95,30 @@ public class TransliteratorTest {
                         .collect(Collectors.summingDouble(d -> Math.pow(d - mean, 2))) / distances.size());
 
                 transliterators.put(std, transliterator);
-                sb.append(String.format("%s %s %s\n", inputRate, lengthDiffRate, std));
+                octave.append(String.format("%s %s %s\n", inputRate, lengthDiffRate, std));
                 lengthDiffRate += LENGTH_DIFF_RATE_ALPHA;
             }
             inputRate += INPUT_RATE_ALPHA;
         }
-        Files.write(Paths.get(fileName), sb.toString().getBytes());
+        Files.write(Paths.get(fileName), octave.toString().getBytes());
         return transliterators.firstEntry().getValue();
     }
 
     // todo: remove
-    @Test
+//    @Test
     public void test() {
         System.out.println("\n");
-        laRuTransliterator.transliterate("inessa", 50).forEach(System.out::println);
+        laRuTransliterator.transliterate("inessa")
+                .stream().limit(10).forEach(t -> LOG.debug(t.toString()));
         System.out.println("\n");
-        laRuTransliterator.transliterate("jurij", 5).forEach(System.out::println);
+        laRuTransliterator.transliterate("jurij")
+                .stream().limit(10).forEach(t -> LOG.debug(t.toString()));
         System.out.println("\n");
-        ruLaTransliterator.transliterate("андрей", 5).forEach(System.out::println);
+        laRuTransliterator.transliterate("miloslavskaya")
+                .stream().limit(10).forEach(t -> LOG.debug(t.toString()));
+        System.out.println("\n");
+        ruLaTransliterator.transliterate("маресьев")
+                .stream().limit(10).forEach(t -> LOG.debug(t.toString()));
         System.out.println("\n");
     }
 
@@ -135,16 +143,52 @@ public class TransliteratorTest {
     }
 
     private static void testTransliteration(Transliterator transliterator, Map<String, String> set, String fileName) throws IOException {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder octave = new StringBuilder();
+        StringBuilder stdout = new StringBuilder();
         set.entrySet().stream()
                 .forEach(e -> {
-                    String transliteration = transliterator.transliterate(e.getKey());
-                    int distance = LevenshteinDistance.computeLevenshteinDistance(transliteration, e.getValue());
-                    sb.append(String.format("%s -> %s (%s, %s)\n", e.getKey(), transliteration, e.getValue(), distance));
+                    TreeSet<Transliterator.Transliteration> transliterations = transliterator.transliterate(e.getKey());
+                    logTransliterations(e.getKey(), transliterations);
+
+                    Transliterator.Transliteration transliteration = transliterations.first();
+                    int distance = LevenshteinDistance.computeLevenshteinDistance(transliteration.joinedOutput(), e.getValue());
+                    octave.append(String.join(" ", new String[]{
+                                    String.valueOf(e.getKey().length()),
+                                    String.valueOf(transliteration.joinedOutput().length()),
+                                    String.valueOf(transliteration.inputProbability),
+                                    String.valueOf(transliteration.outputProbability),
+                                    String.valueOf(distance),
+                                    String.valueOf(transliteration.likelihood)
+                            })
+                    ).append('\n');
+                    stdout.append(String.format("%s -> %s (%s, %s, %s)\n",
+                            e.getKey(),
+                            transliteration.joinedOutput(),
+                            e.getValue(),
+                            distance,
+                            transliteration.likelihood
+                    ));
                     Assert.assertTrue(distance <= MAX_DISTANCE);
                 });
-        System.out.println(fileName + ":\n" + sb.toString());
-        Files.write(Paths.get(fileName), sb.toString().getBytes("UTF-8"));
+        Files.write(Paths.get(fileName), octave.toString().getBytes());
+        LOG.info(fileName + ":\n" + stdout.toString());
+    }
+
+    private static void logTransliterations(String word, TreeSet<Transliterator.Transliteration> transliterations) {
+        StringBuilder sb = new StringBuilder();
+        transliterations.forEach(t -> sb.append(t).append('\n'));
+
+        Path logDir = Paths.get("log");
+        if (!Files.exists(logDir)) try {
+            Files.createDirectories(logDir);
+        } catch (IOException e) {
+            throw new Error(e);
+        }
+        try {
+            Files.write(logDir.resolve(word + ".translit"), sb.toString().getBytes());
+        } catch (IOException e) {
+            throw new Error(e);
+        }
     }
 
     // https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Java

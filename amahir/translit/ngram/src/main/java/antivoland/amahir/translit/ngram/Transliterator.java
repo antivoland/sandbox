@@ -1,9 +1,6 @@
 package antivoland.amahir.translit.ngram;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,20 +18,23 @@ public class Transliterator {
         private Transliteration(List<String> input, List<String> output) {
             this.input = input;
             this.output = output;
+
             double inputProbability = inputCorpusForecaster.syllableSequenceProbability(input);
             double outputProbability = outputCorpusForecaster.syllableSequenceProbability(output);
-            int inputLength = input.stream().collect(Collectors.summingInt(s -> Math.max(1, s.length())));
-            int outputLength = output.stream().collect(Collectors.summingInt(s -> Math.max(1, s.length())));
-            // todo: choose something!
-//            int inputLength = input.stream().collect(Collectors.summingInt(String::length));
-//            int outputLength = output.stream().collect(Collectors.summingInt(String::length));
+
+            int inputLength = input.stream().collect(Collectors.summingInt(String::length));
+            int outputLength = output.stream().collect(Collectors.summingInt(String::length));
             int lengthDiff = Math.abs(inputLength - outputLength);
 
             this.inputProbability = inputProbability; // todo: remove
             this.outputProbability = outputProbability; // todo: remove
             this.lengthDiff = lengthDiff; // todo: remove
 
-            this.likelihood = forecastStrategy.likelihood(inputProbability, outputProbability, lengthDiff);
+            this.likelihood = forecastStrategy.likelihood(inputLength, outputLength, inputProbability, outputProbability, lengthDiff);
+        }
+
+        public String joinedOutput() {
+            return String.join("", output);
         }
 
         @Override
@@ -73,36 +73,25 @@ public class Transliterator {
         this.seekHiddenInputs = seekHiddenInputs;
     }
 
-    public String transliterate(String word) {
-        Transliteration transliteration = transliterate(word, 1).findFirst().get();
-        return String.join("", transliteration.output);
-    }
-
-    public Stream<Transliteration> transliterate(String word, int limit) {
-        List<Transliteration> transliterations = new ArrayList<>();
+    public TreeSet<Transliteration> transliterate(String word) {
+        TreeSet<Transliteration> transliterations = new TreeSet<>(forecastStrategy.reversed());
         List<List<String>> inputs = inputSyllabifier.syllabify(word);
-
-        if (seekHiddenInputs) {
-            List<List<String>> hiddenInputs = new ArrayList<>();
-            for (List<String> input : inputs) {
-                for (int i = 1; i < input.size(); ++i) {
-                    List<String> hiddenInput = new ArrayList<>(input);
-                    hiddenInput.add(i, EMPTY_SYLLABLE);
-                    hiddenInputs.add(hiddenInput);
-                }
-            }
-            inputs.addAll(hiddenInputs);
-        }
-
         for (List<String> input : inputs) {
             List<List<String>> outputs = transliterate(input);
+            if (seekHiddenInputs) {
+                for (int i = 1; i <= input.size(); ++i) {
+                    List<String> hiddenInput = new ArrayList<>(input);
+                    hiddenInput.add(i, EMPTY_SYLLABLE);
+                    outputs.addAll(transliterate(hiddenInput));
+                }
+            }
             transliterations.addAll(
                     outputs.stream()
                             .map(output -> new Transliteration(input, output))
                             .collect(Collectors.toList())
             );
         }
-        return transliterations.stream().sorted(forecastStrategy.reversed()).limit(limit);
+        return transliterations;
     }
 
     private List<List<String>> transliterate(List<String> input) {
@@ -121,16 +110,33 @@ public class Transliterator {
         }
         for (String outputSyllable : outputSyllables) {
             List<List<String>> remainingOutputs = transliterate(input, from + 1);
-            if (remainingOutputs.isEmpty()) {
-                outputs.add(Collections.singletonList(outputSyllable));
-            } else {
-                for (List<String> remainingOutput : remainingOutputs) {
-                    List<String> fork = new ArrayList<>();
-                    fork.add(outputSyllable);
-                    fork.addAll(remainingOutput);
-                    outputs.add(fork);
-                }
+            List<String> fork = new ArrayList<>();
+            if (!EMPTY_SYLLABLE.equals(outputSyllable)) {
+                fork.add(outputSyllable);
             }
+            if (remainingOutputs.isEmpty()) {
+                outputs.add(fork);
+            } else {
+                remainingOutputs.forEach(remainingOutput -> outputs.add(
+                        Stream.concat(fork.stream(), remainingOutput.stream()).collect(Collectors.toList())
+                ));
+            }
+//            for (List<String> remainingOutput : remainingOutputs) {
+//                outputs.add(Stream.concat(fork.stream(), remainingOutput.stream()).collect(Collectors.toList()));
+//            }
+
+//            if (remainingOutputs.isEmpty()) {
+////                outputs.add(EMPTY_SYLLABLE.equals(outputSyllable) ? Collections.emptyList() : Collections.singletonList(outputSyllable));
+////            } else {
+//                for (List<String> remainingOutput : remainingOutputs) {
+//                    List<String> fork = new ArrayList<>();
+//                    if (!EMPTY_SYLLABLE.equals(outputSyllable)) {
+//                        fork.add(outputSyllable);
+//                    }
+//                    fork.addAll(remainingOutput);
+//                    outputs.add(fork);
+//                }
+//            }
         }
         return outputs;
     }
