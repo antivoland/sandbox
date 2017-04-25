@@ -2,7 +2,7 @@
 
 I work on Java, spend time on math, basketball and tango. The resources below can show you my code style:
 
-- [console progress bar for Java](https://github.com/creditnet/console-progress-bar) with drunk pirates test
+- [non-blocking console-based progress bar for Java](https://github.com/creditnet/console-progress-bar) with drunk pirates test
 - names transliteration using [first order Hidden Markov Model](amahir/translit/hmm) and [n-grams](amahir/translit/ngram)
 - application with possibility to visualize [employee structure hierarchy](taltest) and manage using web technologies
 - backing implementation of [money transfers](rtest) between multicurrency accounts
