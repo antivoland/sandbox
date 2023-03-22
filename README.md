@@ -6,7 +6,7 @@ I work on Java, spend time on math, basketball and tango. The resources below ca
 - names transliteration using [first order Hidden Markov Model](https://github.com/antivoland/amazinghiring-test/tree/master/translit/hmm) and [n-grams](https://github.com/antivoland/amazinghiring-test/tree/master/translit/ngram)
 - application with possibility to visualize [employee structure hierarchy](taltest) and manage using web technologies
 - backing implementation of [money transfers](rtest) between multicurrency accounts
-- [microservice](oftest) tracking users and solving inverse geodesy problem
+- [microservice](https://github.com/antivoland/onefactor-test) tracking users and solving inverse geodesy problem
 - my comparsion of [SCRUM vs. KANBAN](symbiomark/README.md#scrum-vs-kanban) in russian
 - partial implementation of [pure client](../../../vazhno-api) for external JSON API
 - [HTML grabber](../../../slone/tree/master/extractor) retrieving and parsing game model from online game creator
