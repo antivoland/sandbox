@@ -5,7 +5,7 @@ I work on Java, spend time on math, basketball and tango. The resources below ca
 - [non-blocking console-based progress bar for Java](https://github.com/creditnet/console-progress-bar) with drunk pirates test
 - names transliteration using [first order Hidden Markov Model](https://github.com/antivoland/amazinghiring-test/tree/master/translit/hmm) and [n-grams](https://github.com/antivoland/amazinghiring-test/tree/master/translit/ngram)
 - application with possibility to visualize [employee structure hierarchy](taltest) and manage using web technologies
-- backing implementation of [money transfers](rtest) between multicurrency accounts
+- backing implementation of [money transfers](https://github.com/antivoland/revolut-test) between multicurrency accounts
 - [microservice](https://github.com/antivoland/onefactor-test) tracking users and solving inverse geodesy problem
 - my comparsion of [SCRUM vs. KANBAN](symbiomark/README.md#scrum-vs-kanban) in russian
 - partial implementation of [pure client](../../../vazhno-api) for external JSON API
