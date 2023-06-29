@@ -1,2 +1,3 @@
 #!/usr/bin/env sh
-git config --global user.name "antivoland"
+git config --global user.name "Vladimir Pavlovskii"
+git config --global user.email "antivoland@gmail.com"
